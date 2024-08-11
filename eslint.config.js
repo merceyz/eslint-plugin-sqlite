@@ -21,6 +21,10 @@ export default tseslint.config(
 		},
 		rules: {
 			"no-undef": "off",
+			"@typescript-eslint/prefer-literal-enum-member": [
+				"error",
+				{ allowBitwiseExpressions: true },
+			],
 		},
 	},
 	{

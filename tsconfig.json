@@ -4,7 +4,7 @@
 		"@tsconfig/strictest/tsconfig.json"
 	],
 	"compilerOptions": {
-		"noEmit": true,
-		"outDir": "dist"
-	}
+		"noEmit": true
+	},
+	"exclude": ["dist", "coverage"]
 }
