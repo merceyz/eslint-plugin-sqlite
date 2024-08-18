@@ -1,13 +1,25 @@
 {
 	"name": "eslint-plugin-sqlite",
 	"type": "module",
+	"version": "1.0.0",
 	"license": "MIT",
 	"scripts": {
 		"build": "tsc && tsc --project tsconfig.build.json",
 		"test": "vitest",
 		"lint": "eslint . --max-warnings 0 --fix",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"prepack": "rm -rf dist && run build"
 	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"files": [
+		"dist"
+	],
 	"dependencies": {
 		"better-sqlite3": "^11.1.2"
 	},
