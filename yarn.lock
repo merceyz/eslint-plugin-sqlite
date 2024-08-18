@@ -764,6 +764,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@typescript-eslint/rule-tester@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "@typescript-eslint/rule-tester@npm:8.1.0"
+  dependencies:
+    "@typescript-eslint/typescript-estree": "npm:8.1.0"
+    "@typescript-eslint/utils": "npm:8.1.0"
+    ajv: "npm:^6.12.6"
+    json-stable-stringify-without-jsonify: "npm:^1.0.1"
+    lodash.merge: "npm:4.6.2"
+    semver: "npm:^7.6.0"
+  peerDependencies:
+    "@eslint/eslintrc": ">=2"
+    eslint: ^8.57.0 || ^9.0.0
+  checksum: 10c0/b119afe19f41734222d9eb902480eadf8b61bbe1da0068b317c9ba1fe3efd903a1096902f6e1e8b1a456d6da855de714628474ffcaa29ad0bf420d96ddb4f59e
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/scope-manager@npm:8.1.0":
   version: 8.1.0
   resolution: "@typescript-eslint/scope-manager@npm:8.1.0"
@@ -815,7 +832,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.1.0":
+"@typescript-eslint/utils@npm:8.1.0, @typescript-eslint/utils@npm:^8.1.0":
   version: 8.1.0
   resolution: "@typescript-eslint/utils@npm:8.1.0"
   dependencies:
@@ -946,7 +963,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^6.12.4":
+"ajv@npm:^6.12.4, ajv@npm:^6.12.6":
   version: 6.12.6
   resolution: "ajv@npm:6.12.6"
   dependencies:
@@ -1514,6 +1531,8 @@ __metadata:
     "@types/eslint-config-prettier": "npm:^6.11.3"
     "@types/eslint__js": "npm:^8.42.3"
     "@types/node": "npm:^18.19.44"
+    "@typescript-eslint/rule-tester": "npm:^8.1.0"
+    "@typescript-eslint/utils": "npm:^8.1.0"
     better-sqlite3: "npm:^11.1.2"
     eslint: "npm:^9.9.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -1522,6 +1541,9 @@ __metadata:
     typescript: "npm:^5.5.4"
     typescript-eslint: "npm:^8.1.0"
     vitest: "npm:^2.0.5"
+  peerDependencies:
+    better-sqlite3: ^11.1.2
+    eslint: ^8.57.0 || ^9.0.0
   languageName: unknown
   linkType: soft
 
@@ -2186,7 +2208,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.merge@npm:^4.6.2":
+"lodash.merge@npm:4.6.2, lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: 10c0/402fa16a1edd7538de5b5903a90228aa48eb5533986ba7fa26606a49db2572bf414ff73a2c9f5d5fd36b31c46a5d5c7e1527749c07cbcf965ccff5fbdf32c506
