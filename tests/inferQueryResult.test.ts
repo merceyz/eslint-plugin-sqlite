@@ -110,3 +110,9 @@ it("should support column selected with a table alias", () => {
 		{ name: "id", type: ColumnType.String | ColumnType.Null },
 	]);
 });
+
+it("should ignore invalid queries", () => {
+	const result = testInferQueryResult("", "SELECT * FROM");
+
+	expect(result).toStrictEqual<typeof result>(null);
+});

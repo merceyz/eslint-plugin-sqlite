@@ -36,7 +36,17 @@ FROM
   WHERE name = :columnName
 `;
 
-export function inferQueryResult(query: string, db: Database): ColumnInfo[] {
+export function inferQueryResult(
+	query: string,
+	db: Database,
+): ColumnInfo[] | null {
+	let preparedQuery;
+	try {
+		preparedQuery = db.prepare(query);
+	} catch {
+		return null;
+	}
+
 	const columnDataStatement = db.prepare<
 		{ tableName: string; columnName: string },
 		{ type: ColumnType; notnull: number }
