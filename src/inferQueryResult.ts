@@ -54,7 +54,14 @@ export function inferQueryResult(
 
 	const columnTypes = new Map<string, ColumnType>();
 
-	for (const column of db.prepare(query).columns()) {
+	let columns;
+	try {
+		columns = preparedQuery.columns();
+	} catch {
+		return [];
+	}
+
+	for (const column of columns) {
 		if (!column.table || !column.column) {
 			columnTypes.set(column.name, ColumnType.Unknown);
 			continue;

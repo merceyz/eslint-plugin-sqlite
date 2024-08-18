@@ -116,3 +116,12 @@ it("should ignore invalid queries", () => {
 
 	expect(result).toStrictEqual<typeof result>(null);
 });
+
+it("should handle queries that don't return data", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id text)",
+		"DELETE FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([]);
+});
