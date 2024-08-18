@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import type { TSESLint } from "@typescript-eslint/utils";
 import SQLite from "better-sqlite3";
 import { createValidQueryRule } from "./rules/valid-query.js";
+import { createTypedResultRule } from "./rules/typed-result.js";
 import { GetDatabaseOptions, RuleOptions } from "./ruleOptions.js";
 
 export interface CreatePluginOptions {
@@ -61,6 +62,7 @@ export function createSqlitePlugin(options: CreatePluginOptions) {
 		},
 		rules: {
 			"valid-query": createValidQueryRule(ruleOptions),
+			"typed-result": createTypedResultRule(ruleOptions),
 		},
 	} satisfies TSESLint.FlatConfig.Plugin;
 
@@ -73,6 +75,7 @@ export function createSqlitePlugin(options: CreatePluginOptions) {
 				},
 				rules: {
 					"sqlite/valid-query": "error",
+					"sqlite/typed-result": "error",
 				},
 			},
 		},

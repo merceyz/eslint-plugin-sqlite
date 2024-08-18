@@ -1,0 +1,200 @@
+import { RuleTester } from "@typescript-eslint/rule-tester";
+import * as vitest from "vitest";
+import { createTypedResultRule } from "../../src/rules/typed-result.js";
+import SQLite from "better-sqlite3";
+
+RuleTester.afterAll = vitest.afterAll;
+RuleTester.it = vitest.it;
+RuleTester.itOnly = vitest.it.only;
+RuleTester.describe = vitest.describe;
+
+const ruleTester = new RuleTester();
+
+const db = new SQLite(":memory:");
+db.exec(`
+	CREATE TABLE users (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL);
+	CREATE TABLE foo (id int);
+	CREATE table test (id ANY NOT NULL, name ANY) STRICT;
+	CREATE table blobData (data BLOB NOT NULL);
+`);
+
+const db_users = new SQLite(":memory:");
+db_users.exec(`
+  CREATE TABLE users (id int);
+`);
+
+const rule = createTypedResultRule({
+	getDatabase({ name }) {
+		return name === "db_users" || name === "nested.db.users" ? db_users : db;
+	},
+});
+
+ruleTester.run("typed-result", rule, {
+	valid: [
+		// Shouldn't match if query can't be determined
+		"db.prepare(true)",
+		"db.prepare(123)",
+		"db.prepare(null)",
+		"db.prepare(undefined)",
+		"db.prepare(1n)",
+		"db.prepare(foo)",
+		// Valid query
+		`db.prepare<[], {"id": number, "name": string}>("SELECT * FROM users")`,
+		// Order of columns doesn't matter
+		`db.prepare<[], {"name": string, "id": number}>("SELECT * FROM users")`,
+		// Identifier as column names
+		`db.prepare<[], {name: string, id: number}>("SELECT * FROM users")`,
+		// Column with unknown type
+		`db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		// Column with Buffer type
+		`db.prepare<[], {"data": Buffer}>("SELECT data FROM blobData")`,
+		// Should ignore invalid queries
+		`db.prepare("SELECT * FROM 42")`,
+		// Should pass the correct name to getDatabase
+		"db_users.prepare<[], {id: number | null}>('SELECT * FROM users')",
+		"nested.db.users.prepare<[], {id: number | null}>('SELECT * FROM users')",
+		// Queries that don't return data
+		"db.prepare('DELETE FROM foo')",
+		"db.prepare<[]>('DELETE FROM foo')",
+	],
+	invalid: [
+		// Query as string Literal
+		{
+			code: `db.prepare("SELECT id FROM users")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"id": number}>("SELECT id FROM users")`,
+		},
+		// Query as TemplateLiteral
+		{
+			code: "db.prepare(`SELECT id FROM users`)",
+			errors: [{ messageId: "missingResultType" }],
+			output: 'db.prepare<[], {"id": number}>(`SELECT id FROM users`)',
+		},
+		// Query as Identifier
+		{
+			code: `const query = 'SELECT id FROM users';db.prepare(query);`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `const query = 'SELECT id FROM users';db.prepare<[], {"id": number}>(query);`,
+		},
+		// Empty typeArguments
+		{
+			code: `db.prepare<>("SELECT * FROM users")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"id": number, "name": string}>("SELECT * FROM users")`,
+		},
+		// Missing result type
+		{
+			code: `db.prepare<[]>("SELECT id FROM users")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"id": number}>("SELECT id FROM users")`,
+		},
+		// Result type isn't an object
+		{
+			code: `db.prepare<[], any>("SELECT * FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number, "name": string}>("SELECT * FROM users")`,
+		},
+		// Empty result type
+		{
+			code: `db.prepare<[], {}>("SELECT * FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number, "name": string}>("SELECT * FROM users")`,
+		},
+		// Missing a column
+		{
+			code: `db.prepare<[], {"id": number}>("SELECT * FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number, "name": string}>("SELECT * FROM users")`,
+		},
+		// Column type is incorrect
+		{
+			code: `db.prepare<[], {"id": string}>("SELECT id FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number}>("SELECT id FROM users")`,
+		},
+		// Column type is missing a type
+		{
+			code: `db.prepare<[], {"id": number}>("SELECT * FROM foo")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number | null}>("SELECT * FROM foo")`,
+		},
+		// Column type union is incorrect
+		{
+			code: `db.prepare<[], {"id": string | null}>("SELECT * FROM foo")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number | null}>("SELECT * FROM foo")`,
+		},
+		// Column name is incorrect
+		{
+			code: `db.prepare<[], {"name": string}>("SELECT id FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number}>("SELECT id FROM users")`,
+		},
+		// An extra column
+		{
+			code: `db.prepare<[], {id: number, name: string}>("SELECT id FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"id": number}>("SELECT id FROM users")`,
+		},
+		// Column with Blob type
+		{
+			code: `db.prepare("SELECT data FROM blobData")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"data": Buffer}>("SELECT data FROM blobData")`,
+		},
+		// Column with any type
+		{
+			code: `db.prepare("SELECT id FROM test")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"id": number | string | Buffer}>("SELECT id FROM test")`,
+		},
+		// Column with any nullable type
+		{
+			code: `db.prepare("SELECT name FROM test")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"name": number | string | Buffer | null}>("SELECT name FROM test")`,
+		},
+		// Column type is unknown
+		{
+			code: `db.prepare("SELECT random();")`,
+			errors: [{ messageId: "missingResultType" }],
+			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		},
+		// Column type is unknown so no other type is allowed
+		{
+			code: `db.prepare<[], {"random()": number}>("SELECT random();")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		},
+		// Column type is unknown so no other type is allowed with it
+		{
+			code: `db.prepare<[], {"random()": unknown | number}>("SELECT random();")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		},
+		// Column name must be a string Literal or an Identifier
+		{
+			code: `db.prepare<[], {random(): unknown}>("SELECT random();")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		},
+		// Column type can't use TSQualifiedName
+		{
+			code: `db.prepare<[], {"random()": globalThis.Array}>("SELECT random();")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		},
+		// Column type can't be any
+		{
+			code: `db.prepare<[], {"random()": any}>("SELECT random();")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
+		},
+		// Should remove result type if query doesn't return data
+		{
+			code: `db.prepare<[], {"random()": any}>("DELETE FROM foo")`,
+			errors: [{ messageId: "extraneousResultType" }],
+			output: `db.prepare<[]>("DELETE FROM foo")`,
+		},
+	],
+});
