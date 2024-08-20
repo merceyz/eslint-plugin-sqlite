@@ -56,6 +56,8 @@ ruleTester.run("typed-result", rule, {
 		// Queries that don't return data
 		"db.prepare('DELETE FROM foo')",
 		"db.prepare<[]>('DELETE FROM foo')",
+		// Should allow the user to set another type for unknown
+		`db.prepare<[], {"random()": (number | null)}>("SELECT random();")`,
 	],
 	invalid: [
 		// Query as string Literal
@@ -160,33 +162,9 @@ ruleTester.run("typed-result", rule, {
 			errors: [{ messageId: "missingResultType" }],
 			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
 		},
-		// Column type is unknown so no other type is allowed
-		{
-			code: `db.prepare<[], {"random()": number}>("SELECT random();")`,
-			errors: [{ messageId: "incorrectResultType" }],
-			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
-		},
-		// Column type is unknown so no other type is allowed with it
-		{
-			code: `db.prepare<[], {"random()": unknown | number}>("SELECT random();")`,
-			errors: [{ messageId: "incorrectResultType" }],
-			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
-		},
 		// Column name must be a string Literal or an Identifier
 		{
 			code: `db.prepare<[], {random(): unknown}>("SELECT random();")`,
-			errors: [{ messageId: "incorrectResultType" }],
-			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
-		},
-		// Column type can't use TSQualifiedName
-		{
-			code: `db.prepare<[], {"random()": globalThis.Array}>("SELECT random();")`,
-			errors: [{ messageId: "incorrectResultType" }],
-			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
-		},
-		// Column type can't be any
-		{
-			code: `db.prepare<[], {"random()": any}>("SELECT random();")`,
 			errors: [{ messageId: "incorrectResultType" }],
 			output: `db.prepare<[], {"random()": unknown}>("SELECT random();")`,
 		},
@@ -195,6 +173,12 @@ ruleTester.run("typed-result", rule, {
 			code: `db.prepare<[], {"random()": any}>("DELETE FROM foo")`,
 			errors: [{ messageId: "extraneousResultType" }],
 			output: `db.prepare<[]>("DELETE FROM foo")`,
+		},
+		// Should preserve user specified unknown type when fixing types
+		{
+			code: `db.prepare<[], {"random()": (foo | number)}>("SELECT random(), id FROM users")`,
+			errors: [{ messageId: "incorrectResultType" }],
+			output: `db.prepare<[], {"random()": (foo | number), "id": number}>("SELECT random(), id FROM users")`,
 		},
 	],
 });

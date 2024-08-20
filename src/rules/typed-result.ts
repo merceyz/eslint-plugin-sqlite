@@ -7,6 +7,8 @@ import {
 import { RuleOptions } from "../ruleOptions.js";
 import { stringifyNode } from "../utils.js";
 
+type ColumnInfoWithUserType = ColumnInfo & { userTSTypeAnnotation?: string };
+
 export function createTypedResultRule(options: RuleOptions) {
 	return ESLintUtils.RuleCreator.withoutDocs({
 		create(context) {
@@ -41,7 +43,10 @@ export function createTypedResultRule(options: RuleOptions) {
 						name: databaseName,
 					});
 
-					const columns = inferQueryResult(val.value, db);
+					const columns: ColumnInfoWithUserType[] | null = inferQueryResult(
+						val.value,
+						db,
+					);
 					if (!columns) {
 						return;
 					}
@@ -110,68 +115,66 @@ export function createTypedResultRule(options: RuleOptions) {
 					}
 
 					const resultParam = typeArguments.params[1];
-					if (resultParam) {
-						const isValid =
-							resultParam.type === TSESTree.AST_NODE_TYPES.TSTypeLiteral &&
-							resultParam.members.length === columns.length &&
-							columns.every((column) => {
-								return resultParam.members.some((member) => {
-									if (
-										member.type !== TSESTree.AST_NODE_TYPES.TSPropertySignature
-									) {
-										return false;
-									}
+					if (!resultParam) {
+						return;
+					}
 
-									if (!member.typeAnnotation) {
-										return false;
-									}
+					if (resultParam.type !== TSESTree.AST_NODE_TYPES.TSTypeLiteral) {
+						context.report({
+							messageId: "incorrectResultType",
+							node: resultParam,
+							*fix(fixer) {
+								yield fixer.replaceText(
+									resultParam,
+									columnsToObjectLiteralText(columns),
+								);
+							},
+						});
+						return;
+					}
 
-									const name =
-										member.key.type === TSESTree.AST_NODE_TYPES.Identifier
-											? member.key.name
-											: ASTUtils.getStringIfConstant(member.key);
-									if (column.name !== name) {
-										return false;
-									}
+					let isValid = resultParam.members.length === columns.length;
 
-									const declaredType = member.typeAnnotation.typeAnnotation;
+					for (const column of columns) {
+						const declaredType = getDeclaredType(
+							column.name,
+							resultParam.members,
+						);
 
-									if (
-										declaredType.type === TSESTree.AST_NODE_TYPES.TSUnionType
-									) {
-										if (countBitsSet(column.type) === 1) {
-											return false;
-										}
-
-										return declaredType.types.every((type) =>
-											isTypeNodeCompatibleWithColumnType(type, column.type),
-										);
-									}
-
-									if (countBitsSet(column.type) !== 1) {
-										return false;
-									}
-
-									return isTypeNodeCompatibleWithColumnType(
-										declaredType,
-										column.type,
-									);
-								});
-							});
-
-						if (!isValid) {
-							context.report({
-								messageId: "incorrectResultType",
-								node: resultParam,
-								*fix(fixer) {
-									yield fixer.replaceText(
-										resultParam,
-										columnsToObjectLiteralText(columns),
-									);
-								},
-							});
-							return;
+						if (!declaredType) {
+							isValid = false;
+							continue;
 						}
+
+						// If the column type is unknown then preserve what the user set it to
+						if (column.type & ColumnType.Unknown) {
+							column.userTSTypeAnnotation =
+								context.sourceCode.getText(declaredType);
+							continue;
+						}
+
+						if (
+							!doesDeclaredTypeMatchColumn(
+								declaredType.typeAnnotation,
+								column.type,
+							)
+						) {
+							isValid = false;
+						}
+					}
+
+					if (!isValid) {
+						context.report({
+							messageId: "incorrectResultType",
+							node: resultParam,
+							*fix(fixer) {
+								yield fixer.replaceText(
+									resultParam,
+									columnsToObjectLiteralText(columns),
+								);
+							},
+						});
+						return;
 					}
 				},
 			};
@@ -238,9 +241,17 @@ function columnTypeToJSType(type: ColumnType): string {
 	return typeParts.join(" | ");
 }
 
-function columnsToObjectLiteralText(columns: ColumnInfo[]): string {
+function columnsToObjectLiteralText(columns: ColumnInfoWithUserType[]): string {
 	return `{${columns
-		.map((column) => `"${column.name}": ${columnTypeToJSType(column.type)}`)
+		.map((column) => {
+			let value = `"${column.name}"`;
+			if (column.userTSTypeAnnotation) {
+				value += column.userTSTypeAnnotation;
+			} else {
+				value += ": " + columnTypeToJSType(column.type);
+			}
+			return value;
+		})
 		.join(", ")}}`;
 }
 
@@ -249,4 +260,49 @@ function countBitsSet(v: number): number {
 	v = v - ((v >> 1) & 0x55555555);
 	v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
 	return (((v + (v >> 4)) & 0xf0f0f0f) * 0x1010101) >> 24;
+}
+
+function getDeclaredType(columnName: string, members: TSESTree.TypeElement[]) {
+	for (const member of members) {
+		if (member.type !== TSESTree.AST_NODE_TYPES.TSPropertySignature) {
+			continue;
+		}
+
+		if (!member.typeAnnotation) {
+			continue;
+		}
+
+		const name =
+			member.key.type === TSESTree.AST_NODE_TYPES.Identifier
+				? member.key.name
+				: ASTUtils.getStringIfConstant(member.key);
+		if (name !== columnName) {
+			continue;
+		}
+
+		return member.typeAnnotation;
+	}
+
+	return null;
+}
+
+function doesDeclaredTypeMatchColumn(
+	declaredType: TSESTree.TypeNode,
+	columnType: ColumnType,
+): boolean {
+	if (declaredType.type === TSESTree.AST_NODE_TYPES.TSUnionType) {
+		if (countBitsSet(columnType) === 1) {
+			return false;
+		}
+
+		return declaredType.types.every((type) =>
+			isTypeNodeCompatibleWithColumnType(type, columnType),
+		);
+	}
+
+	if (countBitsSet(columnType) !== 1) {
+		return false;
+	}
+
+	return isTypeNodeCompatibleWithColumnType(declaredType, columnType);
 }
