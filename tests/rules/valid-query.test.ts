@@ -37,6 +37,25 @@ ruleTester.run("valid-query", rule, {
 	],
 	invalid: [
 		{
+			code: "db.prepare(foo)",
+			errors: [
+				{
+					messageId: "nonStaticQuery",
+				},
+			],
+		},
+		{
+			code: "db.prepare(42)",
+			errors: [
+				{
+					messageId: "invalidQuery",
+					data: {
+						message: "typeof number is not a valid query",
+					},
+				},
+			],
+		},
+		{
 			code: "db.prepare('SELECT test FROM foo')",
 			errors: [
 				{

@@ -22,7 +22,23 @@ export function createValidQueryRule(options: RuleOptions) {
 						arg,
 						context.sourceCode.getScope(arg),
 					);
-					if (typeof val?.value !== "string") {
+
+					if (!val) {
+						context.report({
+							messageId: "nonStaticQuery",
+							node: arg,
+						});
+						return;
+					}
+
+					if (typeof val.value !== "string") {
+						context.report({
+							messageId: "invalidQuery",
+							node: arg,
+							data: {
+								message: `typeof ${typeof val.value} is not a valid query`,
+							},
+						});
 						return;
 					}
 
@@ -56,6 +72,7 @@ export function createValidQueryRule(options: RuleOptions) {
 		meta: {
 			messages: {
 				invalidQuery: "Invalid query: {{message}}",
+				nonStaticQuery: "Unable to determine a static query value",
 			},
 			schema: [],
 			type: "problem",
