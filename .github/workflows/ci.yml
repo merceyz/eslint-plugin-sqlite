@@ -16,12 +16,26 @@ jobs:
           node-version: 18
           cache: yarn
 
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            parser/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - run: yarn
 
       - run: yarn prettier --check .
 
-      - run: yarn lint --no-fix
+      - run: cd parser && cargo clippy -- -D warnings
+
+      - run: cd parser && cargo fmt -- --check
 
       - run: yarn build
+
+      - run: yarn lint --no-fix
 
       - run: yarn test

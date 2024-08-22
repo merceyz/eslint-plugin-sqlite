@@ -4,7 +4,8 @@
 		"@tsconfig/strictest/tsconfig.json"
 	],
 	"compilerOptions": {
-		"noEmit": true
+		"noEmit": true,
+		"checkJs": false
 	},
 	"exclude": ["dist", "coverage"]
 }

@@ -1,0 +1,12 @@
+[package]
+name = "parser"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+fallible-iterator = "0.3.0"
+indexmap = "2.4.0"
+sqlite3-parser = "0.13.0"
+wasm-bindgen = "0.2.93"

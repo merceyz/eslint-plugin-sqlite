@@ -1,5 +1,6 @@
 dist
 coverage
+**/parser/**/*
 
 # Yarn
 yarn.lock

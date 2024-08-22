@@ -4,11 +4,11 @@
 	"version": "1.0.0",
 	"license": "MIT",
 	"scripts": {
-		"build": "tsc && tsc --project tsconfig.build.json",
+		"build": "rm -rf dist src/parser && wasm-pack build --target nodejs ./parser --out-dir \"$(pwd)/src/parser\" && tsc && tsc --project tsconfig.build.json && cp -a src/parser/. dist/parser/ && rm dist/parser/.gitignore",
 		"test": "vitest",
 		"lint": "eslint . --max-warnings 0 --fix",
 		"format": "prettier --write .",
-		"prepack": "rm -rf dist && run build"
+		"prepack": "run build"
 	},
 	"exports": {
 		".": {
@@ -43,7 +43,8 @@
 		"tsx": "^4.17.0",
 		"typescript": "^5.5.4",
 		"typescript-eslint": "^8.1.0",
-		"vitest": "^2.0.5"
+		"vitest": "^2.0.5",
+		"wasm-pack": "^0.13.0"
 	},
 	"packageManager": "yarn@4.4.0",
 	"engines": {
