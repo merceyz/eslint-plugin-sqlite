@@ -1,10 +1,15 @@
 import { Database } from "better-sqlite3";
 import { parse_query_parameters } from "./parser/parser.js";
 
+export interface QueryInput {
+	count: number;
+	names: string[];
+}
+
 export function inferQueryInput(
 	query: string,
 	db: Database,
-): { count: number; names: string[] } | null {
+): QueryInput | null {
 	// Check that the query is valid
 	try {
 		db.prepare(query);
