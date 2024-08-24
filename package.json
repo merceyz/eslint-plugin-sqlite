@@ -3,6 +3,14 @@
 	"type": "module",
 	"version": "1.0.0",
 	"license": "MIT",
+	"keywords": [
+		"eslint",
+		"plugin",
+		"sqlite"
+	],
+	"repository": "https://github.com/merceyz/eslint-plugin-sqlite.git",
+	"author": "merceyz <merceyz@users.noreply.github.com>",
+	"description": "ESLint plugin that can validate SQLite queries and automatically generate types for query parameters and results",
 	"scripts": {
 		"build": "rm -rf dist src/parser && docker build --output ./src/parser --output ./dist/parser ./parser --target build_export && tsc && tsc --project tsconfig.build.json",
 		"test": "vitest",
