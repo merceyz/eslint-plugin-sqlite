@@ -8,7 +8,8 @@
 		"test": "vitest",
 		"lint": "eslint . --max-warnings 0 --fix",
 		"format": "prettier --write .",
-		"prepack": "run build"
+		"prepack": "run build",
+		"generate:licenses": "docker build --output ./ ./parser --target license_export && prettier --write THIRD-PARTY-LICENSES.html"
 	},
 	"exports": {
 		".": {
@@ -18,7 +19,8 @@
 		"./package.json": "./package.json"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"THIRD-PARTY-LICENSES.html"
 	],
 	"dependencies": {
 		"@types/better-sqlite3": "^7.6.11",

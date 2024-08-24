@@ -18,3 +18,19 @@ RUN --mount=type=cache,target=/usr/local/cargo/git \
 
 FROM scratch AS build_export
 COPY --from=build /parser/pkg /
+
+FROM rust:1.80.1 AS license
+
+RUN --mount=type=cache,target=/usr/local/cargo/git \
+  --mount=type=cache,target=/usr/local/cargo/registry \
+  cargo install --version 0.6.4 cargo-about
+
+WORKDIR /parser
+COPY Cargo* about* ./
+COPY src src
+RUN --mount=type=cache,target=/usr/local/cargo/git \
+  --mount=type=cache,target=/usr/local/cargo/registry \
+  cargo about generate -o THIRD-PARTY-LICENSES.html about.hbs
+
+FROM scratch AS license_export
+COPY --from=license /parser/THIRD-PARTY-LICENSES.html /

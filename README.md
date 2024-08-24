@@ -82,3 +82,9 @@ const user = db
 	.prepare<[], { id: number; name: string }>("SELECT * FROM users")
 	.all();
 ```
+
+## License
+
+eslint-plugin-sqlite is licensed under the [MIT License](LICENSE) and
+uses various Rust crates compiled to WebAssembly and bundled with the
+plugin, their licenses can be found in [Third Party Licenses](THIRD-PARTY-LICENSES.html).

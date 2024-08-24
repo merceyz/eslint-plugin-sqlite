@@ -34,6 +34,10 @@ jobs:
 
       - run: cd parser && cargo fmt -- --check
 
+      - run: |
+          yarn generate:licenses
+          git diff --exit-code
+
       - run: yarn build
 
       - run: yarn lint --no-fix
