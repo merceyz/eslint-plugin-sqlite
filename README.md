@@ -41,6 +41,23 @@ const sqlitePlugin = createSqlitePlugin({
 export default [sqlitePlugin.configs.recommended];
 ```
 
+## Editor support
+
+### VSCode
+
+By default the ESLint extension for VSCode uses the Node.js version
+included with VSCode, if that version isn't the same major version
+as the one used by your project then you need to configure the extension
+to use the version of Node.js that your project uses.
+
+You can do that by adding the following to your `.vscode/settings.json` file:
+
+```json
+{
+	"eslint.runtime": "node"
+}
+```
+
 ## Rules
 
 ### valid-query
