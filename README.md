@@ -41,6 +41,25 @@ const sqlitePlugin = createSqlitePlugin({
 export default [sqlitePlugin.configs.recommended];
 ```
 
+If you require additional setup for the database you can return a
+Database instance instead of a URL.
+
+```js
+// eslint.config.js
+import { createSqlitePlugin } from "eslint-plugin-sqlite";
+import Database from "better-sqlite3";
+
+const sqlitePlugin = createSqlitePlugin({
+	getDatabase() {
+		const db = new Database("my_database.db");
+		db.loadExtension("mod_spatialite");
+		return db;
+	},
+});
+
+export default [sqlitePlugin.configs.recommended];
+```
+
 ## Editor support
 
 ### VSCode
