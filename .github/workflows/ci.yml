@@ -24,7 +24,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             parser/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-v1-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - run: yarn
 
@@ -34,11 +36,15 @@ jobs:
 
       - run: cd parser && cargo fmt -- --check
 
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.6.4
+
       - run: |
-          yarn generate:licenses
+          yarn generate:licenses:ci
           git diff --exit-code
 
-      - run: yarn build
+      - run: yarn build:ci
 
       - run: yarn lint --no-fix
 

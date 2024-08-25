@@ -12,12 +12,14 @@
 	"author": "merceyz <merceyz@users.noreply.github.com>",
 	"description": "ESLint plugin that can validate SQLite queries and automatically generate types for query parameters and results",
 	"scripts": {
+		"build:ci": "rm -rf dist src/parser && wasm-pack build --target nodejs ./parser --out-dir \"$(pwd)/src/parser\" && tsc && tsc --project tsconfig.build.json && cp -a src/parser/. dist/parser/ && rm dist/parser/.gitignore",
 		"build": "rm -rf dist src/parser && docker build --output ./src/parser --output ./dist/parser ./parser --target build_export && tsc && tsc --project tsconfig.build.json",
 		"test": "vitest",
 		"lint": "eslint . --max-warnings 0 --fix",
 		"format": "prettier --write .",
 		"prepack": "run build",
-		"generate:licenses": "docker build --output ./ ./parser --target license_export && prettier --write THIRD-PARTY-LICENSES.html"
+		"generate:licenses": "docker build --output ./ ./parser --target license_export && prettier --write THIRD-PARTY-LICENSES.html",
+		"generate:licenses:ci": "cd parser && cargo about generate -o ../THIRD-PARTY-LICENSES.html about.hbs && cd .. && prettier --write THIRD-PARTY-LICENSES.html"
 	},
 	"exports": {
 		".": {
@@ -53,7 +55,8 @@
 		"tsx": "^4.17.0",
 		"typescript": "^5.5.4",
 		"typescript-eslint": "^8.1.0",
-		"vitest": "^2.0.5"
+		"vitest": "^2.0.5",
+		"wasm-pack": "^0.13.0"
 	},
 	"packageManager": "yarn@4.4.0",
 	"engines": {
