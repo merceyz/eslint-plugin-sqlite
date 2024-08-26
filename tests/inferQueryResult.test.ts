@@ -66,7 +66,14 @@ it("should support column with strict ANY type", () => {
 	);
 
 	expect(result).toStrictEqual<typeof result>([
-		{ name: "id", type: ColumnType.Any | ColumnType.Null },
+		{
+			name: "id",
+			type:
+				ColumnType.String |
+				ColumnType.Number |
+				ColumnType.Buffer |
+				ColumnType.Null,
+		},
 	]);
 });
 

@@ -6,7 +6,6 @@ export enum ColumnType {
 	String = 1 << 2,
 	Buffer = 1 << 3,
 	Null = 1 << 4,
-	Any = 1 << 5,
 }
 
 export interface ColumnInfo {
@@ -28,7 +27,7 @@ SELECT
     WHEN (TYPE LIKE '%REAL%')
     OR (TYPE LIKE '%FLOA%')
     OR (TYPE LIKE '%DOUB%') THEN ${ColumnType.Number.toString()}
-    WHEN (TYPE == 'ANY' AND (SELECT strict FROM pragma_table_list(:tableName)) == 1) THEN ${ColumnType.Any.toString()}
+    WHEN (TYPE == 'ANY' AND (SELECT strict FROM pragma_table_list(:tableName)) == 1) THEN ${(ColumnType.String | ColumnType.Number | ColumnType.Buffer).toString()}
     ELSE ${ColumnType.Number.toString()}
   END type
 FROM

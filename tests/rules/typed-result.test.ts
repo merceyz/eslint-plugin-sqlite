@@ -58,6 +58,15 @@ ruleTester.run("typed-result", rule, {
 		"db.prepare<[]>('DELETE FROM foo')",
 		// Should allow the user to set another type for unknown
 		`db.prepare<[], {"random()": (number | null)}>("SELECT random();")`,
+		// Test that no errors are reported for the outputs from the invalid cases
+		`db.prepare<[], {"id": number}>("SELECT id FROM users")`,
+		'db.prepare<[], {"id": number}>(`SELECT id FROM users`)',
+		`const query = 'SELECT id FROM users';db.prepare<[], {"id": number}>(query);`,
+		`db.prepare<[], {"id": number | null}>("SELECT * FROM foo")`,
+		`db.prepare<[], {"id": number | string | Buffer}>("SELECT id FROM test")`,
+		`db.prepare<[], {"name": number | string | Buffer | null}>("SELECT name FROM test")`,
+		`db.prepare<[]>("DELETE FROM foo")`,
+		`db.prepare<[], {"random()": (foo | number), "id": number}>("SELECT random(), id FROM users")`,
 	],
 	invalid: [
 		// Query as string Literal

@@ -225,13 +225,13 @@ function columnTypeToJSType(type: ColumnType): string {
 	if (type & ColumnType.Unknown) {
 		typeParts.push("unknown");
 	}
-	if (type & ColumnType.Any || type & ColumnType.Number) {
+	if (type & ColumnType.Number) {
 		typeParts.push("number");
 	}
-	if (type & ColumnType.Any || type & ColumnType.String) {
+	if (type & ColumnType.String) {
 		typeParts.push("string");
 	}
-	if (type & ColumnType.Any || type & ColumnType.Buffer) {
+	if (type & ColumnType.Buffer) {
 		typeParts.push("Buffer");
 	}
 	if (type & ColumnType.Null) {
