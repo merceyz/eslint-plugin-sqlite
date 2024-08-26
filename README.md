@@ -2,7 +2,9 @@
 
 ## Description
 
-An ESLint plugin that can validate SQLite queries and automatically generate types for query parameters and results.
+An ESLint plugin that can validate SQLite queries and automatically
+generate types for query parameters and results when using the
+`better-sqlite3` library.
 
 ## Usage
 
