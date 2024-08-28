@@ -97,6 +97,9 @@ const users = db.prepare("SELECT * FROM users").all();
 
 Generates types for the input parameters of a query.
 
+The type of an input parameter is set to `unknown` and for named
+parameters you can replace that `unknown` with a more specific type.
+
 ```ts
 // Bad
 const user = db.prepare("SELECT * FROM users WHERE id = :id").get({ id: 1 });
@@ -110,6 +113,9 @@ const user = db
 ### typed-result
 
 Generates types for the result of a query.
+
+If the type of a result column can't be determined then it will be typed
+as `unknown` which you can replace with a more specific type.
 
 ```ts
 // Bad
