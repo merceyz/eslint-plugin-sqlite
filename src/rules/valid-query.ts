@@ -6,17 +6,13 @@ export function createValidQueryRule(options: RuleOptions) {
 	return ESLintUtils.RuleCreator.withoutDocs({
 		create(context) {
 			return {
-				'CallExpression[callee.property.name="prepare"][arguments.length=1]'(
-					node: TSESTree.CallExpression,
+				'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
+					node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
+						arguments: [TSESTree.CallExpression["arguments"][0]];
+						callee: TSESTree.MemberExpression;
+					},
 				) {
-					if (node.callee.type !== TSESTree.AST_NODE_TYPES.MemberExpression) {
-						return;
-					}
-
 					const arg = node.arguments[0];
-					if (!arg) {
-						return;
-					}
 
 					const val = ASTUtils.getStaticValue(
 						arg,

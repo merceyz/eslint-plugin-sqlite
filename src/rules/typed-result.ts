@@ -13,21 +13,15 @@ export function createTypedResultRule(options: RuleOptions) {
 	return ESLintUtils.RuleCreator.withoutDocs({
 		create(context) {
 			return {
-				'CallExpression[callee.property.name="prepare"][arguments.length=1]'(
-					node: TSESTree.CallExpression,
+				'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
+					node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
+						arguments: [TSESTree.CallExpression["arguments"][0]];
+						callee: TSESTree.MemberExpression;
+					},
 				) {
-					if (node.callee.type !== TSESTree.AST_NODE_TYPES.MemberExpression) {
-						return;
-					}
-
-					const arg = node.arguments[0];
-					if (!arg) {
-						return;
-					}
-
 					const val = ASTUtils.getStaticValue(
-						arg,
-						context.sourceCode.getScope(arg),
+						node.arguments[0],
+						context.sourceCode.getScope(node.arguments[0]),
 					);
 					if (typeof val?.value !== "string") {
 						return;
