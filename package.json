@@ -38,6 +38,7 @@
 		"better-sqlite3": "^11.1.2"
 	},
 	"peerDependencies": {
+		"@types/better-sqlite3": "^7.6.11",
 		"better-sqlite3": "^11.1.2",
 		"eslint": "^8.57.0 || ^9.0.0"
 	},
