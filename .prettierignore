@@ -1,6 +1,7 @@
 dist
 coverage
 **/parser/**/*
+CHANGELOG.md
 
 # Yarn
 yarn.lock
