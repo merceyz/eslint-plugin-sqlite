@@ -1,6 +1,6 @@
 import { ESLintUtils, TSESTree, ASTUtils } from "@typescript-eslint/utils";
 import { RuleOptions } from "../ruleOptions.js";
-import { stringifyNode } from "../utils.js";
+import { getQueryValue, stringifyNode } from "../utils.js";
 import { inferQueryInput, QueryInput } from "../inferQueryInput.js";
 
 export function createTypedInputRule(options: RuleOptions) {
@@ -13,7 +13,7 @@ export function createTypedInputRule(options: RuleOptions) {
 						callee: TSESTree.MemberExpression;
 					},
 				) {
-					const val = ASTUtils.getStaticValue(
+					const val = getQueryValue(
 						node.arguments[0],
 						context.sourceCode.getScope(node.arguments[0]),
 					);

@@ -5,7 +5,7 @@ import {
 	inferQueryResult,
 } from "../inferQueryResult.js";
 import { RuleOptions } from "../ruleOptions.js";
-import { stringifyNode } from "../utils.js";
+import { getQueryValue, stringifyNode } from "../utils.js";
 
 type ColumnInfoWithUserType = ColumnInfo & { userTSTypeAnnotation?: string };
 
@@ -19,7 +19,7 @@ export function createTypedResultRule(options: RuleOptions) {
 						callee: TSESTree.MemberExpression;
 					},
 				) {
-					const val = ASTUtils.getStaticValue(
+					const val = getQueryValue(
 						node.arguments[0],
 						context.sourceCode.getScope(node.arguments[0]),
 					);

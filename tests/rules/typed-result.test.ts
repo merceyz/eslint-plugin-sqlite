@@ -67,6 +67,7 @@ ruleTester.run("typed-result", rule, {
 		`db.prepare<[], {"name": number | string | Buffer | null}>("SELECT name FROM test")`,
 		`db.prepare<[]>("DELETE FROM foo")`,
 		`db.prepare<[], {"random()": (foo | number), "id": number}>("SELECT random(), id FROM users")`,
+		'db.prepare<[], {"name": string}>(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
 	],
 	invalid: [
 		// Query as string Literal
@@ -188,6 +189,13 @@ ruleTester.run("typed-result", rule, {
 			code: `db.prepare<[], {"random()": (foo | number)}>("SELECT random(), id FROM users")`,
 			errors: [{ messageId: "incorrectResultType" }],
 			output: `db.prepare<[], {"random()": (foo | number), "id": number}>("SELECT random(), id FROM users")`,
+		},
+		// Variable input parameters
+		{
+			code: 'db.prepare(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+			output:
+				'db.prepare<[], {"name": string}>(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+			errors: [{ messageId: "missingResultType" }],
 		},
 	],
 });

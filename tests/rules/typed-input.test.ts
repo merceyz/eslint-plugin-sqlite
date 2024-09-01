@@ -48,6 +48,7 @@ ruleTester.run("typed-result", rule, {
 		'db.prepare<[unknown, {"userID": unknown}]>("SELECT * FROM users WHERE id = :userID or name = ?")',
 		'db.prepare<[unknown, {"userID": string}]>("SELECT * FROM users WHERE id = :userID or name = ?")',
 		'db.prepare<{"userID": string}>("SELECT * FROM users WHERE id = :userID")',
+		'db.prepare<[unknown]>(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
 	],
 	invalid: [
 		// No parameters
@@ -150,6 +151,13 @@ ruleTester.run("typed-result", rule, {
 			output:
 				'db.prepare<{"userID": string}>("SELECT * FROM users WHERE id = :userID")',
 			errors: [{ messageId: "incorrectInputType" }],
+		},
+		// Variable input parameters
+		{
+			code: 'db.prepare(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+			output:
+				'db.prepare<[unknown]>(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+			errors: [{ messageId: "missingInputType" }],
 		},
 	],
 });

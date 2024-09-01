@@ -34,6 +34,8 @@ ruleTester.run("valid-query", rule, {
 		"db_users.prepare('SELECT * FROM users')",
 		"nested.db.users.prepare('SELECT * FROM users')",
 		"db.prepare('DELETE FROM foo')",
+		"db_users.prepare(`SELECT * FROM users WHERE id IN (${ids.map(() => '?').join(',')})`);",
+		"const query = `SELECT * FROM users WHERE id IN (${ids.map(() => '?').join(',')})`;db_users.prepare(query);",
 	],
 	invalid: [
 		{
@@ -84,6 +86,28 @@ ruleTester.run("valid-query", rule, {
 					messageId: "invalidQuery",
 					data: {
 						message: `near "=": syntax error`,
+					},
+				},
+			],
+		},
+		{
+			code: "db_users.prepare(`SELECT * FROM user WHERE id IN (${ids.map(() => '?').join(',')})`);",
+			errors: [
+				{
+					messageId: "invalidQuery",
+					data: {
+						message: `no such table: user`,
+					},
+				},
+			],
+		},
+		{
+			code: "const query = `SELECT * FROM user WHERE id IN (${ids.map(() => '?').join(',')})`;db_users.prepare(query);",
+			errors: [
+				{
+					messageId: "invalidQuery",
+					data: {
+						message: `no such table: user`,
 					},
 				},
 			],

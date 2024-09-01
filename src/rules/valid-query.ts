@@ -1,6 +1,6 @@
-import { ESLintUtils, TSESTree, ASTUtils } from "@typescript-eslint/utils";
+import { ESLintUtils, TSESTree } from "@typescript-eslint/utils";
 import { RuleOptions } from "../ruleOptions.js";
-import { stringifyNode } from "../utils.js";
+import { getQueryValue, stringifyNode } from "../utils.js";
 
 export function createValidQueryRule(options: RuleOptions) {
 	return ESLintUtils.RuleCreator.withoutDocs({
@@ -14,10 +14,7 @@ export function createValidQueryRule(options: RuleOptions) {
 				) {
 					const arg = node.arguments[0];
 
-					const val = ASTUtils.getStaticValue(
-						arg,
-						context.sourceCode.getScope(arg),
-					);
+					const val = getQueryValue(arg, context.sourceCode.getScope(arg));
 
 					if (!val) {
 						context.report({
