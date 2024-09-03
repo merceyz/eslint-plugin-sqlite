@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.0.0...v1.1.0) (2024-09-03)
+
+
+### Features
+
+* check if column is nullable ([1b7266a](https://github.com/merceyz/eslint-plugin-sqlite/commit/1b7266adfeea78de07a6b0efc35e4d9fd94f6537))
+* support variable input parameters ([adfaab4](https://github.com/merceyz/eslint-plugin-sqlite/commit/adfaab4b02714d97eb2a897c67e861cf310155bc))
+
 ## 1.0.0 (2024-08-31)
 
 
