@@ -1,4 +1,5 @@
 import { Database } from "better-sqlite3";
+import { is_column_nullable, NullableResult } from "./parser/parser.js";
 
 export enum ColumnType {
 	Unknown = 1 << 0,
@@ -75,10 +76,18 @@ export function inferQueryResult(
 			throw new Error("Unable to get column data");
 		}
 
-		columnTypes.set(
-			column.name,
-			columnData.type | (columnData.notnull ? 0 : ColumnType.Null),
-		);
+		let type = columnData.type | (columnData.notnull ? 0 : ColumnType.Null);
+
+		if (type & ColumnType.Null) {
+			const result = is_column_nullable(column.column, column.table, query);
+			if (result === NullableResult.NotNull) {
+				type &= ~ColumnType.Null;
+			} else if (result === NullableResult.Null) {
+				type = ColumnType.Null;
+			}
+		}
+
+		columnTypes.set(column.name, type);
 	}
 
 	return Array.from(columnTypes, ([name, type]) => ({ name, type }));

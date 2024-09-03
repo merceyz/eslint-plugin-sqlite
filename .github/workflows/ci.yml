@@ -36,6 +36,8 @@ jobs:
 
       - run: cd parser && cargo fmt -- --check
 
+      - run: cd parser && cargo test
+
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-about@0.6.4

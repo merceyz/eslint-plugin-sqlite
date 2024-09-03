@@ -132,3 +132,25 @@ it("should handle queries that don't return data", () => {
 
 	expect(result).toStrictEqual<typeof result>([]);
 });
+
+it("should prove that a column is not null", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int)",
+		"SELECT id FROM foo WHERE id IS NOT NULL",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
+	]);
+});
+
+it("should prove that a column is only null", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int)",
+		"SELECT id FROM foo WHERE id IS NULL",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Null },
+	]);
+});
