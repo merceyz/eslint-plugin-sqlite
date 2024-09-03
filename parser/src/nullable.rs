@@ -99,14 +99,17 @@ fn get_used_table_name<'a>(table_name: &str, from: &'a ast::FromClause) -> Optio
 
 fn test_expr(column_name: &str, table_name: &str, expr: &ast::Expr) -> Option<NullableResult> {
 	match expr {
-		ast::Expr::Binary(left, ast::Operator::Equals, right)
-		| ast::Expr::Binary(left, ast::Operator::NotEquals, right)
-		| ast::Expr::Binary(left, ast::Operator::Greater, right)
-		| ast::Expr::Binary(left, ast::Operator::GreaterEquals, right)
-		| ast::Expr::Binary(left, ast::Operator::Less, right)
-		| ast::Expr::Binary(left, ast::Operator::LessEquals, right)
-			if expr_matches_name(column_name, table_name, left)
-				|| expr_matches_name(column_name, table_name, right) =>
+		ast::Expr::Binary(
+			left,
+			ast::Operator::Equals
+			| ast::Operator::NotEquals
+			| ast::Operator::Greater
+			| ast::Operator::GreaterEquals
+			| ast::Operator::Less
+			| ast::Operator::LessEquals,
+			right,
+		) if expr_matches_name(column_name, table_name, left)
+			|| expr_matches_name(column_name, table_name, right) =>
 		{
 			return Some(NullableResult::NotNull);
 		}
