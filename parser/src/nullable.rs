@@ -116,6 +116,12 @@ fn test_expr(column_name: &str, table_name: &str, expr: &ast::Expr) -> Option<Nu
 		ast::Expr::InList { lhs, .. } if expr_matches_name(column_name, table_name, lhs) => {
 			return Some(NullableResult::NotNull);
 		}
+		ast::Expr::Like { lhs, rhs, .. }
+			if expr_matches_name(column_name, table_name, lhs)
+				|| expr_matches_name(column_name, table_name, rhs) =>
+		{
+			return Some(NullableResult::NotNull)
+		}
 		// column is null
 		ast::Expr::Binary(left, ast::Operator::Is, right)
 			if **right == ast::Expr::Literal(ast::Literal::Null)
@@ -359,6 +365,26 @@ mod tests {
 				"bar",
 				"SELECT foo.id FROM foo INNER JOIN bar ON bar.id = foo.id"
 			),
+			Some(NullableResult::NotNull)
+		);
+	}
+
+	#[test]
+	fn support_like_operator() {
+		assert_eq!(
+			is_column_nullable("id", "foo", "select * from foo f where id like ?"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "foo", "select * from foo f where id not like ?"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "foo", "select * from foo f where ? like id"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "foo", "select * from foo f where ? not like id"),
 			Some(NullableResult::NotNull)
 		);
 	}
