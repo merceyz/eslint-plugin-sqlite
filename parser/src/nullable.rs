@@ -55,7 +55,9 @@ pub fn is_column_nullable(column: &str, table_name: &str, query: &str) -> Option
 fn get_used_table_name<'a>(table_name: &str, from: &'a ast::FromClause) -> Option<&'a str> {
 	if let Some(table) = &from.select {
 		match table.as_ref() {
-			ast::SelectTable::Table(name, as_name, _) if name.name.0 == table_name => {
+			ast::SelectTable::Table(name, as_name, _)
+				if compare_identifier(&name.name.0, table_name) =>
+			{
 				let used_table_name = match as_name {
 					Some(ast::As::As(name)) => &name.0,
 					Some(ast::As::Elided(name)) => &name.0,
@@ -80,7 +82,7 @@ fn get_used_table_name<'a>(table_name: &str, from: &'a ast::FromClause) -> Optio
 						| ast::JoinOperator::TypedJoin(Some(ast::JoinType::CROSS)),
 					table: ast::SelectTable::Table(name, as_name, _),
 					..
-				} if name.name.0 == table_name => {
+				} if compare_identifier(&name.name.0, table_name) => {
 					let used_table_name = match as_name {
 						Some(ast::As::As(name)) => &name.0,
 						Some(ast::As::Elided(name)) => &name.0,
@@ -190,10 +192,22 @@ fn test_expr(column_name: &str, table_name: &str, expr: &ast::Expr) -> Option<Nu
 	None
 }
 
+fn compare_identifier(lhs: &str, rhs: &str) -> bool {
+	lhs.trim_start_matches("\"")
+		.trim_end_matches("\"")
+		.to_lowercase()
+		== rhs
+			.trim_start_matches("\"")
+			.trim_end_matches("\"")
+			.to_lowercase()
+}
+
 fn expr_matches_name(column_name: &str, table_name: &str, expr: &ast::Expr) -> bool {
 	match expr {
-		ast::Expr::Id(id) => id.0 == column_name,
-		ast::Expr::Qualified(name, id) => name.0 == table_name && id.0 == column_name,
+		ast::Expr::Id(id) => compare_identifier(&id.0, column_name),
+		ast::Expr::Qualified(name, id) => {
+			compare_identifier(&name.0, table_name) && compare_identifier(&id.0, column_name)
+		}
 		_ => false,
 	}
 }
@@ -385,6 +399,38 @@ mod tests {
 		);
 		assert_eq!(
 			is_column_nullable("id", "foo", "select * from foo f where ? not like id"),
+			Some(NullableResult::NotNull)
+		);
+	}
+
+	#[test]
+	fn support_quoted_names() {
+		assert_eq!(
+			is_column_nullable("id", "foo", "SELECT id FROM \"foo\" WHERE id = ?"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "foo", "SELECT id FROM \"foo\" WHERE \"foo\".id = ?"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "foo", "SELECT id FROM foo WHERE \"id\" = ?"),
+			Some(NullableResult::NotNull)
+		);
+	}
+
+	#[test]
+	fn support_uppercase_names() {
+		assert_eq!(
+			is_column_nullable("id", "foo", "SELECT id FROM FOO WHERE id = ?"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "bar", "SELECT id FROM foo, BAR WHERE bar.id = ?"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "bar", "SELECT id FROM foo, bar WHERE ID = ?"),
 			Some(NullableResult::NotNull)
 		);
 	}
