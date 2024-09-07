@@ -154,3 +154,25 @@ it("should prove that a column is only null", () => {
 		{ name: "id", type: ColumnType.Null },
 	]);
 });
+
+it("should detect when a column is an alias for rowid", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id integer primary key)",
+		"SELECT id FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
+	]);
+});
+
+it("should detect when a column is not an alias for rowid", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id integer, name text, PRIMARY KEY(id, name))",
+		"SELECT id FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number | ColumnType.Null },
+	]);
+});

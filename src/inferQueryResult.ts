@@ -15,9 +15,11 @@ export interface ColumnInfo {
 }
 
 // https://www.sqlite.org/datatype3.html#determination_of_column_affinity
+// https://www.sqlite.org/lang_createtable.html#rowids_and_the_integer_primary_key
+// Note that this query doesn't handle the exception to rowid aliasing
 const COLUMN_DATA_QUERY = `
 SELECT
-  \`notnull\`,
+  iif(\`notnull\` = 1, 1, TYPE = 'INTEGER' AND pk = 1 AND (SELECT COUNT(*) FROM pragma_table_info(:tableName) WHERE pk != 0) = 1) AS 'notnull',
   CASE
     WHEN TYPE LIKE '%INT%' THEN ${ColumnType.Number.toString()}
     WHEN (TYPE LIKE '%CHAR%')
