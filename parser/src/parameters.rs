@@ -16,7 +16,7 @@ pub struct Parameters {
 }
 
 #[wasm_bindgen]
-pub fn parse_query_parameters(query: String) -> Option<Parameters> {
+pub fn parse_query_parameters(query: &str) -> Option<Parameters> {
 	let mut parser = Parser::new(query.as_bytes());
 	let cmd = parser.next().ok()??;
 
