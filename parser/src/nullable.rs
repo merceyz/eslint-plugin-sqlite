@@ -11,7 +11,12 @@ pub enum NullableResult {
 }
 
 #[wasm_bindgen]
-pub fn is_column_nullable(column: &str, table_name: &str, query: &str) -> Option<NullableResult> {
+pub fn is_column_nullable(
+	column: &str,
+	table_name: &str,
+	notnull: bool,
+	query: &str,
+) -> Option<NullableResult> {
 	let mut parser = Parser::new(query.as_bytes());
 	let cmd = parser.next().ok()??;
 
@@ -22,6 +27,11 @@ pub fn is_column_nullable(column: &str, table_name: &str, query: &str) -> Option
 			..
 		} = select.body.select
 		{
+			// If a column is declared as not null we only need to prove that the table it came from is always present
+			if notnull {
+				return get_used_table_name(table_name, &from).map(|_| NullableResult::NotNull);
+			}
+
 			let used_table_name = get_used_table_name(table_name, &from)?;
 
 			if let Some(where_clause) = where_clause {
@@ -218,17 +228,20 @@ mod tests {
 
 	#[test]
 	fn returns_none_when_nothing_is_provable() {
-		assert_eq!(is_column_nullable("id", "foo", "select * from foo"), None);
+		assert_eq!(
+			is_column_nullable("id", "foo", false, "select * from foo"),
+			None
+		);
 	}
 
 	#[test]
 	fn support_not_null() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo where id is not null"),
+			is_column_nullable("id", "foo", false, "select * from foo where id is not null"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo where id notnull"),
+			is_column_nullable("id", "foo", false, "select * from foo where id notnull"),
 			Some(NullableResult::NotNull)
 		);
 	}
@@ -236,15 +249,20 @@ mod tests {
 	#[test]
 	fn support_aliased_table() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where id notnull"),
+			is_column_nullable("id", "foo", false, "select * from foo f where id notnull"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where f.id notnull"),
+			is_column_nullable("id", "foo", false, "select * from foo f where f.id notnull"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where foo.id notnull"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo f where foo.id notnull"
+			),
 			None
 		);
 	}
@@ -252,15 +270,30 @@ mod tests {
 	#[test]
 	fn support_aliased_table_using_as() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo as f where id notnull"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo as f where id notnull"
+			),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo as f where f.id notnull"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo as f where f.id notnull"
+			),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo as f where foo.id notnull"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo as f where foo.id notnull"
+			),
 			None
 		);
 	}
@@ -268,7 +301,12 @@ mod tests {
 	#[test]
 	fn support_and() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo where 1=1 and id not null",),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo where 1=1 and id not null",
+			),
 			Some(NullableResult::NotNull)
 		);
 	}
@@ -279,6 +317,7 @@ mod tests {
 			is_column_nullable(
 				"id",
 				"foo",
+				false,
 				"select * from foo where id is not null or id is not null and 1=1",
 			),
 			Some(NullableResult::NotNull)
@@ -288,13 +327,19 @@ mod tests {
 	#[test]
 	fn support_parens() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where (id not null)",),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo f where (id not null)",
+			),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
 			is_column_nullable(
 				"id",
 				"foo",
+				false,
 				"select * from foo f where (id is null) or (id is null)",
 			),
 			Some(NullableResult::Null)
@@ -303,6 +348,7 @@ mod tests {
 			is_column_nullable(
 				"id",
 				"foo",
+				false,
 				"select * from foo f where (id is null) and (id is null)",
 			),
 			Some(NullableResult::Null)
@@ -312,7 +358,7 @@ mod tests {
 	#[test]
 	fn support_is_null() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where id is null",),
+			is_column_nullable("id", "foo", false, "select * from foo f where id is null",),
 			Some(NullableResult::Null)
 		);
 	}
@@ -323,6 +369,7 @@ mod tests {
 			is_column_nullable(
 				"id",
 				"bar",
+				false,
 				"select * from foo join bar where bar.id is null"
 			),
 			Some(NullableResult::Null)
@@ -331,12 +378,18 @@ mod tests {
 			is_column_nullable(
 				"id",
 				"bar",
+				false,
 				"select * from foo join bar b where b.id is null"
 			),
 			Some(NullableResult::Null)
 		);
 		assert_eq!(
-			is_column_nullable("id", "bar", "select * from foo, bar b where b.id is null"),
+			is_column_nullable(
+				"id",
+				"bar",
+				false,
+				"select * from foo, bar b where b.id is null"
+			),
 			Some(NullableResult::Null)
 		);
 	}
@@ -344,12 +397,17 @@ mod tests {
 	#[test]
 	fn support_yoda_null_check() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where null is id",),
+			is_column_nullable("id", "foo", false, "select * from foo f where null is id",),
 			Some(NullableResult::Null)
 		);
 
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where null is not id",),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo f where null is not id",
+			),
 			Some(NullableResult::NotNull)
 		);
 	}
@@ -357,7 +415,7 @@ mod tests {
 	#[test]
 	fn support_in_list() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where id in (:bar)"),
+			is_column_nullable("id", "foo", false, "select * from foo f where id in (:bar)"),
 			Some(NullableResult::NotNull)
 		);
 	}
@@ -368,6 +426,7 @@ mod tests {
 			is_column_nullable(
 				"id",
 				"foo",
+				false,
 				"SELECT foo.id FROM foo INNER JOIN bar ON bar.id = foo.id"
 			),
 			Some(NullableResult::NotNull)
@@ -377,6 +436,7 @@ mod tests {
 			is_column_nullable(
 				"id",
 				"bar",
+				false,
 				"SELECT foo.id FROM foo INNER JOIN bar ON bar.id = foo.id"
 			),
 			Some(NullableResult::NotNull)
@@ -386,19 +446,29 @@ mod tests {
 	#[test]
 	fn support_like_operator() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where id like ?"),
+			is_column_nullable("id", "foo", false, "select * from foo f where id like ?"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where id not like ?"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo f where id not like ?"
+			),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where ? like id"),
+			is_column_nullable("id", "foo", false, "select * from foo f where ? like id"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "select * from foo f where ? not like id"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"select * from foo f where ? not like id"
+			),
 			Some(NullableResult::NotNull)
 		);
 	}
@@ -406,15 +476,20 @@ mod tests {
 	#[test]
 	fn support_quoted_names() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "SELECT id FROM \"foo\" WHERE id = ?"),
+			is_column_nullable("id", "foo", false, "SELECT id FROM \"foo\" WHERE id = ?"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "SELECT id FROM \"foo\" WHERE \"foo\".id = ?"),
+			is_column_nullable(
+				"id",
+				"foo",
+				false,
+				"SELECT id FROM \"foo\" WHERE \"foo\".id = ?"
+			),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "foo", "SELECT id FROM foo WHERE \"id\" = ?"),
+			is_column_nullable("id", "foo", false, "SELECT id FROM foo WHERE \"id\" = ?"),
 			Some(NullableResult::NotNull)
 		);
 	}
@@ -422,16 +497,41 @@ mod tests {
 	#[test]
 	fn support_uppercase_names() {
 		assert_eq!(
-			is_column_nullable("id", "foo", "SELECT id FROM FOO WHERE id = ?"),
+			is_column_nullable("id", "foo", false, "SELECT id FROM FOO WHERE id = ?"),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "bar", "SELECT id FROM foo, BAR WHERE bar.id = ?"),
+			is_column_nullable(
+				"id",
+				"bar",
+				false,
+				"SELECT id FROM foo, BAR WHERE bar.id = ?"
+			),
 			Some(NullableResult::NotNull)
 		);
 		assert_eq!(
-			is_column_nullable("id", "bar", "SELECT id FROM foo, bar WHERE ID = ?"),
+			is_column_nullable("id", "bar", false, "SELECT id FROM foo, bar WHERE ID = ?"),
 			Some(NullableResult::NotNull)
+		);
+	}
+
+	#[test]
+	fn check_if_not_null_column_is_always_present() {
+		assert_eq!(
+			is_column_nullable("id", "foo", true, "select * from foo"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "bar", true, "select * from foo, bar"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "bar", true, "select * from foo join bar"),
+			Some(NullableResult::NotNull)
+		);
+		assert_eq!(
+			is_column_nullable("id", "bar", true, "select * from foo left join bar"),
+			None
 		);
 	}
 }

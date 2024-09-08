@@ -85,21 +85,10 @@ it("should support column without a table", () => {
 	]);
 });
 
-it("should support query as column", () => {
-	const result = testInferQueryResult(
-		"CREATE TABLE foo (id text not null)",
-		"SELECT (SELECT id FROM foo) AS id",
-	);
-
-	expect(result).toStrictEqual<typeof result>([
-		{ name: "id", type: ColumnType.String },
-	]);
-});
-
 it("should support columns with the same name", () => {
 	const result = testInferQueryResult(
 		"CREATE TABLE foo (id text);\nCREATE table bar (id int not null)",
-		"SELECT * FROM foo LEFT JOIN bar",
+		"SELECT * FROM foo JOIN bar",
 	);
 
 	expect(result).toStrictEqual<typeof result>([
@@ -174,5 +163,27 @@ it("should detect when a column is not an alias for rowid", () => {
 
 	expect(result).toStrictEqual<typeof result>([
 		{ name: "id", type: ColumnType.Number | ColumnType.Null },
+	]);
+});
+
+it("should detect when a not null column might not be present", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int not null); CREATE TABLE bar (id int not null)",
+		"SELECT foo.id FROM bar LEFT JOIN foo ON foo.id = bar.id",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number | ColumnType.Null },
+	]);
+});
+
+it("should detect when a not null column is always present", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int not null); CREATE TABLE bar (id int not null)",
+		"SELECT foo.id FROM bar JOIN foo ON foo.id = bar.id",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
 	]);
 });

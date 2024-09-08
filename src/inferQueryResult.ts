@@ -78,15 +78,21 @@ export function inferQueryResult(
 			throw new Error("Unable to get column data");
 		}
 
-		let type = columnData.type | (columnData.notnull ? 0 : ColumnType.Null);
+		let type = columnData.type;
 
-		if (type & ColumnType.Null) {
-			const result = is_column_nullable(column.column, column.table, query);
-			if (result === NullableResult.NotNull) {
-				type &= ~ColumnType.Null;
-			} else if (result === NullableResult.Null) {
-				type = ColumnType.Null;
-			}
+		const result = is_column_nullable(
+			column.column,
+			column.table,
+			Boolean(columnData.notnull),
+			query,
+		);
+
+		if (result === NullableResult.NotNull) {
+			type &= ~ColumnType.Null;
+		} else if (result === NullableResult.Null) {
+			type = ColumnType.Null;
+		} else {
+			type |= ColumnType.Null;
 		}
 
 		columnTypes.set(column.name, type);
