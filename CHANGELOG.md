@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.1.0...v1.2.0) (2024-09-08)
+
+
+### Features
+
+* support LIKE operator ([53e36fa](https://github.com/merceyz/eslint-plugin-sqlite/commit/53e36fa4ea170c14bf9eb53e883b672123c6c30f))
+
+
+### Bug Fixes
+
+* check if not null column is always present ([747cc6a](https://github.com/merceyz/eslint-plugin-sqlite/commit/747cc6a433b1513d098fa982384d54b8aa7a33dc))
+* handle column aliasing the rowid ([24436c9](https://github.com/merceyz/eslint-plugin-sqlite/commit/24436c9a4f911059943e28c05c99710c8874727a))
+* handle varied casing and quoted identifiers ([202faf3](https://github.com/merceyz/eslint-plugin-sqlite/commit/202faf329d20fb7a4f90da53643d64025b5fc5e2))
+
 ## [1.1.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.0.0...v1.1.0) (2024-09-03)
 
 
