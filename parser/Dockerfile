@@ -1,4 +1,4 @@
-FROM rust:1.80.1 AS build
+FROM rust:1.81.0 AS build
 
 RUN --mount=type=cache,target=/usr/local/cargo/git \
   --mount=type=cache,target=/usr/local/cargo/registry \
@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/git \
 FROM scratch AS build_export
 COPY --from=build /parser/pkg /
 
-FROM rust:1.80.1 AS license
+FROM rust:1.81.0 AS license
 
 RUN --mount=type=cache,target=/usr/local/cargo/git \
   --mount=type=cache,target=/usr/local/cargo/registry \
