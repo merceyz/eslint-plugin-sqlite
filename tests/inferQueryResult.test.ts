@@ -187,3 +187,15 @@ it("should detect when a not null column is always present", () => {
 		{ name: "id", type: ColumnType.Number },
 	]);
 });
+
+it("should support query as column", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id text not null)",
+		"SELECT (SELECT id FROM foo) AS id",
+	);
+
+	// If table foo is empty then id will be null
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.String | ColumnType.Null },
+	]);
+});
