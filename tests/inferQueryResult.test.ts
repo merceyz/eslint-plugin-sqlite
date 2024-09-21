@@ -199,3 +199,16 @@ it("should support query as column", () => {
 		{ name: "id", type: ColumnType.String | ColumnType.Null },
 	]);
 });
+
+it("should support selecting rowid, oid, and _rowid_", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (name text)",
+		"SELECT rowid as rowid, oid as oid, _rowid_ as _rowid_ FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "rowid", type: ColumnType.Unknown },
+		{ name: "oid", type: ColumnType.Unknown },
+		{ name: "_rowid_", type: ColumnType.Unknown },
+	]);
+});

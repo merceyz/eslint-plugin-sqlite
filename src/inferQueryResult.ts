@@ -75,7 +75,8 @@ export function inferQueryResult(
 		});
 
 		if (!columnData) {
-			throw new Error("Unable to get column data");
+			columnTypes.set(column.name, ColumnType.Unknown);
+			continue;
 		}
 
 		let type = columnData.type;
