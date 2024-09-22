@@ -81,7 +81,7 @@ it("should support column without a table", () => {
 	const result = testInferQueryResult("", "SELECT 1");
 
 	expect(result).toStrictEqual<typeof result>([
-		{ name: "1", type: ColumnType.Unknown },
+		{ name: "1", type: ColumnType.Number },
 	]);
 });
 
@@ -207,8 +207,108 @@ it("should support selecting rowid, oid, and _rowid_", () => {
 	);
 
 	expect(result).toStrictEqual<typeof result>([
-		{ name: "rowid", type: ColumnType.Unknown },
-		{ name: "oid", type: ColumnType.Unknown },
-		{ name: "_rowid_", type: ColumnType.Unknown },
+		{ name: "rowid", type: ColumnType.Number },
+		{ name: "oid", type: ColumnType.Number },
+		{ name: "_rowid_", type: ColumnType.Number },
+	]);
+});
+
+it("should support ifnull()", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int)",
+		"SELECT ifnull(id, 1) as id FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
+	]);
+});
+
+it("should support coalesce()", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int)",
+		"SELECT coalesce(id, 1) as id FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
+	]);
+});
+
+it("should support string concatenation", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id text not null, name text)",
+		"SELECT id || 'bar' as id, name || 'baz' as name FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.String },
+		{ name: "name", type: ColumnType.String | ColumnType.Null },
+	]);
+});
+
+it("should support count", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE foo (id int)",
+		"SELECT count(*) as c FROM foo",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "c", type: ColumnType.Number },
+	]);
+});
+
+it("should support literals", () => {
+	const result = testInferQueryResult(
+		"",
+		"SELECT 1, true, false, 'foo', x'01', NULL",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "1", type: ColumnType.Number },
+		{ name: "true", type: ColumnType.Number },
+		{ name: "false", type: ColumnType.Number },
+		{ name: "'foo'", type: ColumnType.String },
+		{ name: "x'01'", type: ColumnType.Buffer },
+		{ name: "NULL", type: ColumnType.Null },
+		// TODO: Add support for these literals
+		// { name: "current_time", type: ColumnType.String },
+		// { name: "current_date", type: ColumnType.String },
+		// { name: "current_timestamp", type: ColumnType.String },
+	]);
+});
+
+it("should detect when column can't be null", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE users (id integer primary key, email text, name text)",
+		"SELECT * FROM users WHERE email = ?",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
+		{ name: "email", type: ColumnType.String },
+		{ name: "name", type: ColumnType.String | ColumnType.Null },
+	]);
+});
+
+it("should support insert into ... returning", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE users (id integer primary key, email text, name text)",
+		"INSERT INTO users (email, name) VALUES (?, ?) RETURNING id",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
+	]);
+});
+
+it("should support update ... returning", () => {
+	const result = testInferQueryResult(
+		"CREATE TABLE users (id integer primary key, email text, name text)",
+		"UPDATE users SET email = ? WHERE id = ? RETURNING id",
+	);
+
+	expect(result).toStrictEqual<typeof result>([
+		{ name: "id", type: ColumnType.Number },
 	]);
 });
