@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.2.0...v1.3.0) (2024-09-22)
+
+
+### Features
+
+* infer types from opcodes ([35656df](https://github.com/merceyz/eslint-plugin-sqlite/commit/35656df595dafc8bf5b00c7c44b19a15798c9246))
+
+
+### Bug Fixes
+
+* handle columns not in `pragma_table_info` ([dde4b89](https://github.com/merceyz/eslint-plugin-sqlite/commit/dde4b896d909fc4b01d781e9439fcbdaaead3433))
+
 ## [1.2.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.1.0...v1.2.0) (2024-09-08)
 
 
