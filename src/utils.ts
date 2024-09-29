@@ -35,13 +35,27 @@ export function getQueryValue(
 	}
 
 	if (arg.type === TSESTree.AST_NODE_TYPES.TemplateLiteral) {
-		if (arg.expressions.every((expr) => isVariableParameterExpression(expr))) {
-			return {
-				value: arg.quasis.map((quasi) => quasi.value.cooked).join("?"),
-			};
+		let query = "";
+
+		for (let i = 0; i < arg.quasis.length; i++) {
+			const quasi = arg.quasis[i];
+			if (quasi) {
+				query += quasi.value.cooked;
+
+				const expr = arg.expressions[i];
+				if (expr) {
+					const value = getParameterExpressionValue(expr);
+					if (value == null) {
+						return null;
+					}
+					query += value;
+				}
+			}
 		}
 
-		return null;
+		return {
+			value: query,
+		};
 	}
 
 	if (arg.type === TSESTree.AST_NODE_TYPES.Identifier) {
@@ -63,61 +77,62 @@ export function getQueryValue(
 }
 
 /**
- * Checks if the expression looks like `foo.map(() => '?').join(',')`
+ * If the expression looks like `foo.map(() => '<value>').join('<separator>')`
+ * then the value of the map callback is returned.
  */
-function isVariableParameterExpression(expr: TSESTree.Expression) {
+function getParameterExpressionValue(expr: TSESTree.Expression) {
 	if (expr.type !== TSESTree.AST_NODE_TYPES.CallExpression || expr.optional) {
-		return false;
+		return null;
 	}
 
 	if (expr.callee.type !== TSESTree.AST_NODE_TYPES.MemberExpression) {
-		return false;
+		return null;
 	}
 
 	if (!expr.arguments[0]) {
-		return false;
+		return null;
 	}
 
 	if (ASTUtils.getPropertyName(expr.callee) !== "join") {
-		return false;
+		return null;
 	}
 
 	const joinValue = ASTUtils.getStaticValue(expr.arguments[0]);
-	if (typeof joinValue?.value !== "string" || joinValue.value.trim() !== ",") {
-		return false;
+	if (typeof joinValue?.value !== "string") {
+		return null;
 	}
 
 	if (
 		expr.callee.object.type !== TSESTree.AST_NODE_TYPES.CallExpression ||
 		expr.callee.object.optional
 	) {
-		return false;
+		return null;
 	}
 
 	const maybeMapExpr = expr.callee.object;
 
 	if (maybeMapExpr.callee.type !== TSESTree.AST_NODE_TYPES.MemberExpression) {
-		return false;
+		return null;
 	}
 
 	if (ASTUtils.getPropertyName(maybeMapExpr.callee) !== "map") {
-		return false;
+		return null;
 	}
 
 	if (!maybeMapExpr.arguments[0]) {
-		return false;
+		return null;
 	}
 
 	const maybeCallback = maybeMapExpr.arguments[0];
 
 	if (maybeCallback.type !== TSESTree.AST_NODE_TYPES.ArrowFunctionExpression) {
-		return false;
+		return null;
 	}
 
 	const mapValue = ASTUtils.getStaticValue(maybeCallback.body);
-	if (typeof mapValue?.value !== "string" || mapValue.value.trim() !== "?") {
-		return false;
+	if (typeof mapValue?.value !== "string") {
+		return null;
 	}
 
-	return true;
+	return mapValue.value;
 }

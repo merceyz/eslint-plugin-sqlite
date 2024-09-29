@@ -17,7 +17,7 @@ db.exec(`
 
 const db_users = new SQLite(":memory:");
 db_users.exec(`
-  CREATE TABLE users (id int);
+  CREATE TABLE users (id int, name text);
 `);
 
 const rule = createValidQueryRule({
@@ -36,10 +36,20 @@ ruleTester.run("valid-query", rule, {
 		"db.prepare('DELETE FROM foo')",
 		"db_users.prepare(`SELECT * FROM users WHERE id IN (${ids.map(() => '?').join(',')})`);",
 		"const query = `SELECT * FROM users WHERE id IN (${ids.map(() => '?').join(',')})`;db_users.prepare(query);",
+		"db_users.prepare(`SELECT * FROM users WHERE ${ids.map(() => 'NAME LIKE ? || \\'%\\'').join(' OR ')}`);",
+		"const query = `SELECT * FROM users WHERE ${ids.map(() => 'NAME LIKE ? || \\'%\\'').join(' OR ')}`;db_users.prepare(query);",
 	],
 	invalid: [
 		{
 			code: "db.prepare(foo)",
+			errors: [
+				{
+					messageId: "nonStaticQuery",
+				},
+			],
+		},
+		{
+			code: "db_users.prepare(`SELECT * FROM users WHERE ${ids.map(() => unknownValue).join(' OR ')}`);",
 			errors: [
 				{
 					messageId: "nonStaticQuery",
