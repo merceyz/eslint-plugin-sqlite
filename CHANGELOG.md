@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.3.0...v1.4.0) (2024-09-29)
+
+
+### Features
+
+* support any string value in map and join ([15890ee](https://github.com/merceyz/eslint-plugin-sqlite/commit/15890ee19f49285ccfa51874dfd98269f002287e))
+
 ## [1.3.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.2.0...v1.3.0) (2024-09-22)
 
 
