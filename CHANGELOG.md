@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.4.0...v1.4.1) (2024-10-12)
+
+
+### Bug Fixes
+
+* support `.join` without arguments ([10328ba](https://github.com/merceyz/eslint-plugin-sqlite/commit/10328ba2f75866147d1fd76725ad49ffad6b7b87))
+
 ## [1.4.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.3.0...v1.4.0) (2024-09-29)
 
 
