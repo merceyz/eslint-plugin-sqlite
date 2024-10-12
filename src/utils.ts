@@ -89,16 +89,14 @@ function getParameterExpressionValue(expr: TSESTree.Expression) {
 		return null;
 	}
 
-	if (!expr.arguments[0]) {
-		return null;
-	}
-
 	if (ASTUtils.getPropertyName(expr.callee) !== "join") {
 		return null;
 	}
 
-	const joinValue = ASTUtils.getStaticValue(expr.arguments[0]);
-	if (typeof joinValue?.value !== "string") {
+	if (
+		expr.arguments[0] != null &&
+		typeof ASTUtils.getStaticValue(expr.arguments[0])?.value !== "string"
+	) {
 		return null;
 	}
 

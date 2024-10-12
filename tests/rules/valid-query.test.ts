@@ -38,6 +38,7 @@ ruleTester.run("valid-query", rule, {
 		"const query = `SELECT * FROM users WHERE id IN (${ids.map(() => '?').join(',')})`;db_users.prepare(query);",
 		"db_users.prepare(`SELECT * FROM users WHERE ${ids.map(() => 'NAME LIKE ? || \\'%\\'').join(' OR ')}`);",
 		"const query = `SELECT * FROM users WHERE ${ids.map(() => 'NAME LIKE ? || \\'%\\'').join(' OR ')}`;db_users.prepare(query);",
+		"db_users.prepare(`SELECT * FROM users WHERE id IN (${ids.map(() => '?').join()})`);",
 	],
 	invalid: [
 		{
