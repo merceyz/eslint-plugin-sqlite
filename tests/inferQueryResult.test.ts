@@ -261,7 +261,7 @@ it("should support count", () => {
 it("should support literals", () => {
 	const result = testInferQueryResult(
 		"",
-		"SELECT 1, true, false, 'foo', x'01', NULL",
+		"SELECT 1, true, false, 'foo', x'01', NULL, current_time, current_date, current_timestamp",
 	);
 
 	expect(result).toStrictEqual<typeof result>([
@@ -271,10 +271,9 @@ it("should support literals", () => {
 		{ name: "'foo'", type: ColumnType.String },
 		{ name: "x'01'", type: ColumnType.Buffer },
 		{ name: "NULL", type: ColumnType.Null },
-		// TODO: Add support for these literals
-		// { name: "current_time", type: ColumnType.String },
-		// { name: "current_date", type: ColumnType.String },
-		// { name: "current_timestamp", type: ColumnType.String },
+		{ name: "current_time", type: ColumnType.String },
+		{ name: "current_date", type: ColumnType.String },
+		{ name: "current_timestamp", type: ColumnType.String },
 	]);
 });
 

@@ -464,7 +464,7 @@ dependencies = [
 [[package]]
 name = "sqlx-core"
 version = "0.8.2"
-source = "git+https://github.com/merceyz/sqlx.git?branch=merceyz/expose-explain#97dff468778418a94f938c0058180c46628bfbd9"
+source = "git+https://github.com/merceyz/sqlx.git?branch=eslint-plugin-sqlite#cb31272267ad5febfd7c6bbe5113c96f3f71ef9d"
 dependencies = [
  "bytes",
  "crossbeam-queue",
@@ -491,7 +491,7 @@ dependencies = [
 [[package]]
 name = "sqlx-sqlite"
 version = "0.8.2"
-source = "git+https://github.com/merceyz/sqlx.git?branch=merceyz/expose-explain#97dff468778418a94f938c0058180c46628bfbd9"
+source = "git+https://github.com/merceyz/sqlx.git?branch=eslint-plugin-sqlite#cb31272267ad5febfd7c6bbe5113c96f3f71ef9d"
 dependencies = [
  "log",
  "sqlx-core",
