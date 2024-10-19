@@ -240,22 +240,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
-name = "minimal-lexical"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "nom"
-version = "7.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
-dependencies = [
- "memchr",
- "minimal-lexical",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -434,16 +418,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
-name = "sqlformat"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bba3a93db0cc4f7bdece8bb09e77e2e785c20bfebf79eb8340ed80708048790"
-dependencies = [
- "nom",
- "unicode_categories",
-]
-
-[[package]]
 name = "sqlite3-parser"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -464,7 +438,7 @@ dependencies = [
 [[package]]
 name = "sqlx-core"
 version = "0.8.2"
-source = "git+https://github.com/merceyz/sqlx.git?branch=eslint-plugin-sqlite#cb31272267ad5febfd7c6bbe5113c96f3f71ef9d"
+source = "git+https://github.com/merceyz/sqlx.git?rev=d4c0dbdd09b107f942bb464e2adc0439153a21e2#d4c0dbdd09b107f942bb464e2adc0439153a21e2"
 dependencies = [
  "bytes",
  "crossbeam-queue",
@@ -482,7 +456,6 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "smallvec",
- "sqlformat",
  "thiserror",
  "tracing",
  "url",
@@ -491,7 +464,7 @@ dependencies = [
 [[package]]
 name = "sqlx-sqlite"
 version = "0.8.2"
-source = "git+https://github.com/merceyz/sqlx.git?branch=eslint-plugin-sqlite#cb31272267ad5febfd7c6bbe5113c96f3f71ef9d"
+source = "git+https://github.com/merceyz/sqlx.git?rev=d4c0dbdd09b107f942bb464e2adc0439153a21e2#d4c0dbdd09b107f942bb464e2adc0439153a21e2"
 dependencies = [
  "log",
  "sqlx-core",
@@ -605,12 +578,6 @@ checksum = "5033c97c4262335cded6d6fc3e5c18ab755e1a3dc96376350f3d8e9f009ad956"
 dependencies = [
  "tinyvec",
 ]
-
-[[package]]
-name = "unicode_categories"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39ec24b3121d976906ece63c9daad25b85969647682eee313cb5779fdd69e14e"
 
 [[package]]
 name = "url"
