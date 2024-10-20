@@ -1,14 +1,6 @@
-import { RuleTester } from "@typescript-eslint/rule-tester";
-import * as vitest from "vitest";
 import { createTypedInputRule } from "../../src/rules/typed-input.js";
 import SQLite from "better-sqlite3";
-
-RuleTester.afterAll = vitest.afterAll;
-RuleTester.it = vitest.it;
-RuleTester.itOnly = vitest.it.only;
-RuleTester.describe = vitest.describe;
-
-const ruleTester = new RuleTester();
+import { ruleTester } from "./rule-tester.js";
 
 const db = new SQLite(":memory:");
 db.exec(`
