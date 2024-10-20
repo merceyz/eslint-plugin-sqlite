@@ -1,129 +1,116 @@
 import { ESLintUtils, TSESTree, ASTUtils } from "@typescript-eslint/utils";
-import { RuleOptions } from "../ruleOptions.js";
-import { getQueryValue, stringifyNode } from "../utils.js";
+import { getQueryValue } from "../utils.js";
 import { inferQueryInput, QueryInput } from "../inferQueryInput.js";
 
-export function createTypedInputRule(options: RuleOptions) {
-	return ESLintUtils.RuleCreator.withoutDocs({
-		create(context) {
-			return {
-				'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
-					node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
-						arguments: [TSESTree.CallExpression["arguments"][0]];
-						callee: TSESTree.MemberExpression;
-					},
-				) {
-					const val = getQueryValue(
-						node.arguments[0],
-						context.sourceCode.getScope(node.arguments[0]),
-					);
-					if (typeof val?.value !== "string") {
-						return;
-					}
+export const typedInputRule = ESLintUtils.RuleCreator.withoutDocs({
+	create(context) {
+		return {
+			'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
+				node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
+					arguments: [TSESTree.CallExpression["arguments"][0]];
+					callee: TSESTree.MemberExpression;
+				},
+			) {
+				const val = getQueryValue(
+					node.arguments[0],
+					context.sourceCode.getScope(node.arguments[0]),
+				);
+				if (typeof val?.value !== "string") {
+					return;
+				}
 
-					const databaseName = stringifyNode(node.callee.object);
-					if (!databaseName) {
-						return;
-					}
+				const queryInput = inferQueryInput(val.value);
+				if (queryInput == null) {
+					return;
+				}
 
-					const db = options.getDatabase({
-						filename: context.filename,
-						name: databaseName,
-					});
-
-					const queryInput = inferQueryInput(val.value, db);
-					if (queryInput == null) {
-						return;
-					}
-
-					const typeArguments = node.typeArguments;
-					const inputParam = typeArguments?.params[0];
-					if (!typeArguments || !inputParam) {
-						context.report({
-							node: node,
-							messageId: "missingInputType",
-							*fix(fixer) {
-								if (typeArguments && !inputParam) {
-									yield fixer.replaceText(
-										typeArguments,
-										`<${queryInputToText(queryInput)}>`,
-									);
-								} else {
-									yield fixer.insertTextAfter(
-										node.callee,
-										`<${queryInputToText(queryInput)}>`,
-									);
-								}
-							},
-						});
-						return;
-					}
-
-					if (isDeclaredTypeCorrect(queryInput, inputParam)) {
-						return;
-					}
-
-					const members =
-						inputParam.type === TSESTree.AST_NODE_TYPES.TSTypeLiteral
-							? inputParam.members
-							: inputParam.type === TSESTree.AST_NODE_TYPES.TSTupleType
-								? inputParam.elementTypes.find(
-										(element) =>
-											element.type === TSESTree.AST_NODE_TYPES.TSTypeLiteral,
-									)?.members
-								: null;
-
-					const userDeclaredTypes = new Map<string, string>();
-
-					if (members) {
-						for (const member of members) {
-							if (member.type !== TSESTree.AST_NODE_TYPES.TSPropertySignature) {
-								continue;
-							}
-
-							if (!member.typeAnnotation) {
-								continue;
-							}
-
-							const name =
-								member.key.type === TSESTree.AST_NODE_TYPES.Identifier
-									? member.key.name
-									: ASTUtils.getStringIfConstant(member.key);
-
-							if (!name) {
-								continue;
-							}
-
-							const type = context.sourceCode.getText(member.typeAnnotation);
-							userDeclaredTypes.set(name, type);
-						}
-					}
-
+				const typeArguments = node.typeArguments;
+				const inputParam = typeArguments?.params[0];
+				if (!typeArguments || !inputParam) {
 					context.report({
-						node: inputParam,
-						messageId: "incorrectInputType",
+						node: node,
+						messageId: "missingInputType",
 						*fix(fixer) {
-							yield fixer.replaceText(
-								inputParam,
-								queryInputToText(queryInput, userDeclaredTypes),
-							);
+							if (typeArguments && !inputParam) {
+								yield fixer.replaceText(
+									typeArguments,
+									`<${queryInputToText(queryInput)}>`,
+								);
+							} else {
+								yield fixer.insertTextAfter(
+									node.callee,
+									`<${queryInputToText(queryInput)}>`,
+								);
+							}
 						},
 					});
-				},
-			};
-		},
-		meta: {
-			messages: {
-				missingInputType: "Missing input type for query",
-				incorrectInputType: "Incorrect input type for query",
+					return;
+				}
+
+				if (isDeclaredTypeCorrect(queryInput, inputParam)) {
+					return;
+				}
+
+				const members =
+					inputParam.type === TSESTree.AST_NODE_TYPES.TSTypeLiteral
+						? inputParam.members
+						: inputParam.type === TSESTree.AST_NODE_TYPES.TSTupleType
+							? inputParam.elementTypes.find(
+									(element) =>
+										element.type === TSESTree.AST_NODE_TYPES.TSTypeLiteral,
+								)?.members
+							: null;
+
+				const userDeclaredTypes = new Map<string, string>();
+
+				if (members) {
+					for (const member of members) {
+						if (member.type !== TSESTree.AST_NODE_TYPES.TSPropertySignature) {
+							continue;
+						}
+
+						if (!member.typeAnnotation) {
+							continue;
+						}
+
+						const name =
+							member.key.type === TSESTree.AST_NODE_TYPES.Identifier
+								? member.key.name
+								: ASTUtils.getStringIfConstant(member.key);
+
+						if (!name) {
+							continue;
+						}
+
+						const type = context.sourceCode.getText(member.typeAnnotation);
+						userDeclaredTypes.set(name, type);
+					}
+				}
+
+				context.report({
+					node: inputParam,
+					messageId: "incorrectInputType",
+					*fix(fixer) {
+						yield fixer.replaceText(
+							inputParam,
+							queryInputToText(queryInput, userDeclaredTypes),
+						);
+					},
+				});
 			},
-			schema: [],
-			type: "suggestion",
-			fixable: "code",
+		};
+	},
+	meta: {
+		messages: {
+			missingInputType: "Missing input type for query",
+			incorrectInputType: "Incorrect input type for query",
 		},
-		defaultOptions: [],
-	});
-}
+		schema: [],
+		type: "suggestion",
+		fixable: "code",
+	},
+	defaultOptions: [],
+});
 
 function queryInputToText(
 	queryInput: QueryInput,

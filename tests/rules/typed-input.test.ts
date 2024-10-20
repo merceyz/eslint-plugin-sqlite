@@ -1,19 +1,7 @@
-import { createTypedInputRule } from "../../src/rules/typed-input.js";
-import SQLite from "better-sqlite3";
+import { typedInputRule } from "../../src/rules/typed-input.js";
 import { ruleTester } from "./rule-tester.js";
 
-const db = new SQLite(":memory:");
-db.exec(`
-	CREATE TABLE users (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL);
-`);
-
-const rule = createTypedInputRule({
-	getDatabase() {
-		return db;
-	},
-});
-
-ruleTester.run("typed-input", rule, {
+ruleTester.run("typed-input", typedInputRule, {
 	valid: [
 		// Shouldn't match if query can't be determined
 		"db.prepare(true)",

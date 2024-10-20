@@ -135,7 +135,7 @@ export function inferQueryResult(
 		)
 	) {
 		// Workaround for https://github.com/WiseLibs/better-sqlite3/issues/1243
-		const inputs = inferQueryInput(query, db);
+		const inputs = inferQueryInput(query);
 		const args = [];
 		if (inputs) {
 			args.push(new Array(inputs.count - inputs.names.length).fill(0));

@@ -1,30 +1,14 @@
 import { inferQueryInput } from "../src/inferQueryInput.js";
 import { it, expect } from "vitest";
-import SQLite from "better-sqlite3";
-
-function testInferQueryInput(source: string, query: string) {
-	const db = new SQLite(":memory:");
-
-	if (source) {
-		db.exec(source);
-	}
-
-	const result = inferQueryInput(query, db);
-	db.close();
-	return result;
-}
 
 it("should ignore invalid queries", () => {
-	const result = testInferQueryInput("", "SELECT * FROM");
+	const result = inferQueryInput("SELECT * FROM");
 
 	expect(result).toStrictEqual<typeof result>(null);
 });
 
 it("should support anonymous parameters", () => {
-	const result = testInferQueryInput(
-		"CREATE TABLE foo (bar int)",
-		"SELECT * FROM foo WHERE bar = ?",
-	);
+	const result = inferQueryInput("SELECT * FROM foo WHERE bar = ?");
 
 	expect(result).toStrictEqual<typeof result>({
 		count: 1,
@@ -33,8 +17,7 @@ it("should support anonymous parameters", () => {
 });
 
 it("should support named parameters", () => {
-	const result = testInferQueryInput(
-		"CREATE TABLE foo (bar int)",
+	const result = inferQueryInput(
 		"SELECT * FROM foo WHERE bar = :bar or bar = :bar2",
 	);
 
@@ -45,8 +28,7 @@ it("should support named parameters", () => {
 });
 
 it("should support both anonymous and named parameters", () => {
-	const result = testInferQueryInput(
-		"CREATE TABLE foo (bar int)",
+	const result = inferQueryInput(
 		"SELECT * FROM foo WHERE bar = ? or bar = :bar",
 	);
 
@@ -57,8 +39,7 @@ it("should support both anonymous and named parameters", () => {
 });
 
 it("should deduplicate named parameters", () => {
-	const result = testInferQueryInput(
-		"CREATE TABLE foo (bar int)",
+	const result = inferQueryInput(
 		"SELECT * FROM foo WHERE bar = $bar or bar = :bar or bar = @bar",
 	);
 
@@ -69,8 +50,7 @@ it("should deduplicate named parameters", () => {
 });
 
 it("should handle ?NNN parameters", () => {
-	const result = testInferQueryInput(
-		"CREATE TABLE foo (bar int)",
+	const result = inferQueryInput(
 		"SELECT * FROM foo WHERE bar = ? or bar = ?1 or bar = ?2",
 	);
 
