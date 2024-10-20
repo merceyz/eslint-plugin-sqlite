@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.5.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.4.0...v1.5.0) (2024-10-20)
+
+
+### Features
+
+* types for current_time, current_date, and current_timestamp ([09e3c21](https://github.com/merceyz/eslint-plugin-sqlite/commit/09e3c21fbf5aebc81d3f29908bab378d4dc4ec90))
+
+
+### Bug Fixes
+
+* support `.join` without arguments ([10328ba](https://github.com/merceyz/eslint-plugin-sqlite/commit/10328ba2f75866147d1fd76725ad49ffad6b7b87))
+
+
+### Performance Improvements
+
+* don't use database for input parameters ([faac980](https://github.com/merceyz/eslint-plugin-sqlite/commit/faac9808437b7261ebb0b2bbea966931b12c8389))
+
 ## [1.4.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.3.0...v1.4.0) (2024-09-29)
 
 
