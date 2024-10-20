@@ -79,6 +79,12 @@ You can do that by adding the following to your `.vscode/settings.json` file:
 }
 ```
 
+## Configs
+
+### recommended
+
+The recommended config enables the `valid-query`, `typed-input`, and `typed-result` rules.
+
 ## Rules
 
 ### valid-query
