@@ -13,7 +13,7 @@ const rule = createTypedInputRule({
 	},
 });
 
-ruleTester.run("typed-result", rule, {
+ruleTester.run("typed-input", rule, {
 	valid: [
 		// Shouldn't match if query can't be determined
 		"db.prepare(true)",
