@@ -11,3 +11,7 @@ indexmap = "2.4.0"
 sqlite3-parser = "0.13.0"
 wasm-bindgen = "0.2.93"
 sqlx-sqlite = { git = "https://github.com/merceyz/sqlx.git", rev = "d4c0dbdd09b107f942bb464e2adc0439153a21e2" }
+
+[profile.release]
+lto = true
+codegen-units = 1
