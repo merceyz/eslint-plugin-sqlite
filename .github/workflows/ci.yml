@@ -38,6 +38,12 @@ jobs:
 
       - run: cd parser && cargo test
 
+      - run: yarn build:ci
+
+      - run: yarn lint --no-fix
+
+      - run: yarn test
+
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-about@0.6.4
@@ -45,9 +51,3 @@ jobs:
       - run: |
           yarn generate:licenses:ci
           git diff --exit-code
-
-      - run: yarn build:ci
-
-      - run: yarn lint --no-fix
-
-      - run: yarn test
