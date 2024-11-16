@@ -1,6 +1,7 @@
-import { ESLintUtils, TSESTree, ASTUtils } from "@typescript-eslint/utils";
-import { getQueryValue } from "../utils.js";
+import { ASTUtils, ESLintUtils, TSESTree } from "@typescript-eslint/utils";
+
 import { inferQueryInput, QueryInput } from "../inferQueryInput.js";
+import { getQueryValue } from "../utils.js";
 
 export const typedInputRule = ESLintUtils.RuleCreator.withoutDocs({
 	create(context) {

@@ -1,6 +1,7 @@
-import { it, expect } from "vitest";
 import SQLite from "better-sqlite3";
-import { inferQueryResult, ColumnType } from "../src/inferQueryResult.js";
+import { expect, it } from "vitest";
+
+import { ColumnType, inferQueryResult } from "../src/inferQueryResult.js";
 
 function testInferQueryResult(source: string, query: string) {
 	const db = new SQLite(":memory:");

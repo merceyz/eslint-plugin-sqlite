@@ -1,5 +1,6 @@
+import { expect, it } from "vitest";
+
 import { inferQueryInput } from "../src/inferQueryInput.js";
-import { it, expect } from "vitest";
 
 it("should ignore invalid queries", () => {
 	const result = inferQueryInput("SELECT * FROM");

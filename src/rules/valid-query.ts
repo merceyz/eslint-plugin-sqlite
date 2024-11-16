@@ -1,4 +1,5 @@
 import { ESLintUtils, TSESTree } from "@typescript-eslint/utils";
+
 import { RuleOptions } from "../ruleOptions.js";
 import { getQueryValue, stringifyNode } from "../utils.js";
 

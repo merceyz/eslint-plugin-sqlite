@@ -1,5 +1,6 @@
-import { createTypedResultRule } from "../../src/rules/typed-result.js";
 import SQLite from "better-sqlite3";
+
+import { createTypedResultRule } from "../../src/rules/typed-result.js";
 import { ruleTester } from "./rule-tester.js";
 
 const db = new SQLite(":memory:");

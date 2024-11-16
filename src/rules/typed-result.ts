@@ -1,4 +1,5 @@
-import { ESLintUtils, TSESTree, ASTUtils } from "@typescript-eslint/utils";
+import { ASTUtils, ESLintUtils, TSESTree } from "@typescript-eslint/utils";
+
 import {
 	ColumnInfo,
 	ColumnType,

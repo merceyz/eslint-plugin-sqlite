@@ -1,12 +1,13 @@
 import { Database } from "better-sqlite3";
+
+import { inferQueryInput } from "./inferQueryInput.js";
 import {
 	is_column_nullable,
-	NullableResult,
-	Query,
 	JSColumnType,
+	NullableResult,
 	NullableStatus,
+	Query,
 } from "./parser/parser.js";
-import { inferQueryInput } from "./inferQueryInput.js";
 
 export enum ColumnType {
 	Unknown = 1 << 0,

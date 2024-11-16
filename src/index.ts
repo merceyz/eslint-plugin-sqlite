@@ -1,10 +1,12 @@
 import { fileURLToPath } from "node:url";
+
 import type { TSESLint } from "@typescript-eslint/utils";
 import SQLite from "better-sqlite3";
-import { createValidQueryRule } from "./rules/valid-query.js";
-import { createTypedResultRule } from "./rules/typed-result.js";
-import { typedInputRule } from "./rules/typed-input.js";
+
 import { GetDatabaseOptions, RuleOptions } from "./ruleOptions.js";
+import { typedInputRule } from "./rules/typed-input.js";
+import { createTypedResultRule } from "./rules/typed-result.js";
+import { createValidQueryRule } from "./rules/valid-query.js";
 
 export interface CreatePluginOptions {
 	/**

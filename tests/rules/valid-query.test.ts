@@ -1,5 +1,6 @@
-import { createValidQueryRule } from "../../src/rules/valid-query.js";
 import SQLite from "better-sqlite3";
+
+import { createValidQueryRule } from "../../src/rules/valid-query.js";
 import { ruleTester } from "./rule-tester.js";
 
 const db = new SQLite(":memory:");
