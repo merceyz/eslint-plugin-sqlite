@@ -43,11 +43,3 @@ jobs:
       - run: yarn lint --no-fix
 
       - run: yarn test
-
-      - uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-about@0.6.4
-
-      - run: |
-          yarn generate:licenses:ci
-          git diff --exit-code

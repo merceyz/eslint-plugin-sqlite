@@ -1,0 +1,59 @@
+name: Licenses
+
+on:
+  push:
+    paths:
+      - parser/Cargo.lock
+      - .github/workflows/licenses.yml
+  pull_request:
+    paths:
+      - parser/Cargo.lock
+      - .github/workflows/licenses.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update-licenses:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            parser/target/
+          key: ${{ runner.os }}-cargo-v1-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - run: yarn
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.6.4
+
+      - run: |
+          yarn generate:licenses:ci
+
+          if git diff --exit-code; then
+            echo "No changes in licenses"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add THIRD-PARTY-LICENSES.html
+            git commit -m "chore: update third-party-licenses"
+            git push
+          fi
