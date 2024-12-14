@@ -32,6 +32,8 @@ ruleTester.run("valid-query", rule, {
 		"db_users.prepare(`SELECT * FROM users WHERE ${ids.map(() => 'NAME LIKE ? || \\'%\\'').join(' OR ')}`);",
 		"const query = `SELECT * FROM users WHERE ${ids.map(() => 'NAME LIKE ? || \\'%\\'').join(' OR ')}`;db_users.prepare(query);",
 		"db_users.prepare(`SELECT * FROM users WHERE id IN (${ids.map(() => '?').join()})`);",
+		'this.prepare("SELECT * FROM foo")',
+		'super.prepare("SELECT * FROM foo")',
 	],
 	invalid: [
 		{
@@ -107,6 +109,28 @@ ruleTester.run("valid-query", rule, {
 		},
 		{
 			code: "const query = `SELECT * FROM user WHERE id IN (${ids.map(() => '?').join(',')})`;db_users.prepare(query);",
+			errors: [
+				{
+					messageId: "invalidQuery",
+					data: {
+						message: `no such table: user`,
+					},
+				},
+			],
+		},
+		{
+			code: "this.prepare('SELECT * FROM user')",
+			errors: [
+				{
+					messageId: "invalidQuery",
+					data: {
+						message: `no such table: user`,
+					},
+				},
+			],
+		},
+		{
+			code: "super.prepare('SELECT * FROM user')",
 			errors: [
 				{
 					messageId: "invalidQuery",

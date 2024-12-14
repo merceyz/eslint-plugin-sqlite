@@ -29,6 +29,8 @@ ruleTester.run("typed-input", typedInputRule, {
 		'db.prepare<[unknown, {"userID": string}]>("SELECT * FROM users WHERE id = :userID or name = ?")',
 		'db.prepare<{"userID": string}>("SELECT * FROM users WHERE id = :userID")',
 		'db.prepare<[unknown]>(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+		'this.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
+		'super.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
 	],
 	invalid: [
 		// No parameters
@@ -137,6 +139,16 @@ ruleTester.run("typed-input", typedInputRule, {
 			code: 'db.prepare(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
 			output:
 				'db.prepare<[unknown]>(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+			errors: [{ messageId: "missingInputType" }],
+		},
+		{
+			code: 'this.prepare("SELECT * FROM users WHERE id = ?")',
+			output: 'this.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
+			errors: [{ messageId: "missingInputType" }],
+		},
+		{
+			code: 'super.prepare("SELECT * FROM users WHERE id = ?")',
+			output: 'super.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
 			errors: [{ messageId: "missingInputType" }],
 		},
 	],

@@ -4,6 +4,12 @@ export function stringifyNode(
 	node: TSESTree.Expression | TSESTree.PrivateIdentifier,
 ): string | null {
 	switch (node.type) {
+		case TSESTree.AST_NODE_TYPES.Super: {
+			return "super";
+		}
+		case TSESTree.AST_NODE_TYPES.ThisExpression: {
+			return "this";
+		}
 		case TSESTree.AST_NODE_TYPES.Identifier: {
 			return node.name;
 		}

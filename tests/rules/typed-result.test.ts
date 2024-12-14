@@ -61,6 +61,8 @@ ruleTester.run("typed-result", rule, {
 		`db.prepare<[]>("DELETE FROM foo")`,
 		`db.prepare<[], {"random()": (foo | number), "id": number}>("SELECT random(), id FROM users")`,
 		'db.prepare<[], {"name": string}>(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+		'this.prepare<[], {"name": string}>(`SELECT name FROM users`)',
+		'super.prepare<[], {"name": string}>(`SELECT name FROM users`)',
 	],
 	invalid: [
 		// Query as string Literal
@@ -188,6 +190,16 @@ ruleTester.run("typed-result", rule, {
 			code: 'db.prepare(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
 			output:
 				'db.prepare<[], {"name": string}>(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
+			errors: [{ messageId: "missingResultType" }],
+		},
+		{
+			code: "this.prepare(`SELECT name FROM users`)",
+			output: 'this.prepare<[], {"name": string}>(`SELECT name FROM users`)',
+			errors: [{ messageId: "missingResultType" }],
+		},
+		{
+			code: "super.prepare(`SELECT name FROM users`)",
+			output: 'super.prepare<[], {"name": string}>(`SELECT name FROM users`)',
 			errors: [{ messageId: "missingResultType" }],
 		},
 	],
