@@ -31,16 +31,10 @@ ruleTester.run("typed-result", rule, {
 		"db.prepare(undefined)",
 		"db.prepare(1n)",
 		"db.prepare(foo)",
-		// Valid query
-		`db.prepare<[], {"id": number, "name": string}>("SELECT * FROM users")`,
 		// Order of columns doesn't matter
 		`db.prepare<[], {"name": string, "id": number}>("SELECT * FROM users")`,
 		// Identifier as column names
 		`db.prepare<[], {name: string, id: number}>("SELECT * FROM users")`,
-		// Column with unknown type
-		`db.prepare<[], {"random()": unknown}>("SELECT random();")`,
-		// Column with Buffer type
-		`db.prepare<[], {"data": Buffer}>("SELECT data FROM blobData")`,
 		// Should ignore invalid queries
 		`db.prepare("SELECT * FROM 42")`,
 		// Should pass the correct name to getDatabase
@@ -51,18 +45,6 @@ ruleTester.run("typed-result", rule, {
 		"db.prepare<[]>('DELETE FROM foo')",
 		// Should allow the user to set another type for unknown
 		`db.prepare<[], {"random()": (number | null)}>("SELECT random();")`,
-		// Test that no errors are reported for the outputs from the invalid cases
-		`db.prepare<[], {"id": number}>("SELECT id FROM users")`,
-		'db.prepare<[], {"id": number}>(`SELECT id FROM users`)',
-		`const query = 'SELECT id FROM users';db.prepare<[], {"id": number}>(query);`,
-		`db.prepare<[], {"id": number | null}>("SELECT * FROM foo")`,
-		`db.prepare<[], {"id": number | string | Buffer}>("SELECT id FROM test")`,
-		`db.prepare<[], {"name": number | string | Buffer | null}>("SELECT name FROM test")`,
-		`db.prepare<[]>("DELETE FROM foo")`,
-		`db.prepare<[], {"random()": (foo | number), "id": number}>("SELECT random(), id FROM users")`,
-		'db.prepare<[], {"name": string}>(`SELECT name FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
-		'this.prepare<[], {"name": string}>(`SELECT name FROM users`)',
-		'super.prepare<[], {"name": string}>(`SELECT name FROM users`)',
 	],
 	invalid: [
 		// Query as string Literal

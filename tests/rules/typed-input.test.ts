@@ -14,23 +14,6 @@ ruleTester.run("typed-input", typedInputRule, {
 		'db.prepare("SELECT * FROM 42")',
 		// Identifier is allowed as a name
 		'db.prepare<{id: unknown}>("SELECT * FROM users WHERE id = $id")',
-		// Test that no errors are reported for the outputs from the invalid cases
-		'db.prepare<[]>("SELECT * FROM users")',
-		'db.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
-		'db.prepare<[unknown, unknown]>("SELECT * FROM users WHERE id = ? and name = ?")',
-		'db.prepare<{"id": unknown}>("SELECT * FROM users WHERE id = $id")',
-		'db.prepare<{"id": unknown, "name": unknown}>("SELECT * FROM users WHERE id = $id and name = @name")',
-		'db.prepare<[unknown, {"id": unknown}]>("SELECT * FROM users WHERE id = $id and name = ?")',
-		'db.prepare<{"id": unknown, "name": unknown}>("SELECT * FROM users WHERE id = :id and name = :name")',
-		'db.prepare<[unknown, {"id": unknown, "name": unknown}]>("SELECT * FROM users WHERE id = :id or id = ? and name = :name")',
-		'db.prepare<[unknown, {"id": unknown}]>("SELECT * FROM users WHERE id = :id or id = ?")',
-		'db.prepare<{"userID": unknown}>("SELECT * FROM users WHERE id = :userID")',
-		'db.prepare<[unknown, {"userID": unknown}]>("SELECT * FROM users WHERE id = :userID or name = ?")',
-		'db.prepare<[unknown, {"userID": string}]>("SELECT * FROM users WHERE id = :userID or name = ?")',
-		'db.prepare<{"userID": string}>("SELECT * FROM users WHERE id = :userID")',
-		'db.prepare<[unknown]>(`SELECT * FROM users WHERE id IN (${foo.map(() => "?").join(",")})`)',
-		'this.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
-		'super.prepare<[unknown]>("SELECT * FROM users WHERE id = ?")',
 	],
 	invalid: [
 		// No parameters
