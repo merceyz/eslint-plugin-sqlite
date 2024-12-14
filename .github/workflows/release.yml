@@ -3,15 +3,18 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  pull-requests: write
-
 name: release-please
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
+
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - uses: googleapis/release-please-action@v4
@@ -19,22 +22,23 @@ jobs:
         with:
           release-type: node
 
+  publish:
+    needs: release-please
+    runs-on: ubuntu-latest
+    if: ${{ needs.release-please.outputs.release_created  }}
+
+    steps:
       - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.release_created }}
 
       - run: corepack enable
-        if: ${{ steps.release.outputs.release_created }}
 
       - uses: actions/setup-node@v4
-        if: ${{ steps.release.outputs.release_created }}
         with:
           node-version: 18
           cache: yarn
 
       - run: yarn
-        if: ${{ steps.release.outputs.release_created }}
 
       - run: yarn npm publish --access public
-        if: ${{ steps.release.outputs.release_created }}
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
