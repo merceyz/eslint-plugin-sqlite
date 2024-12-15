@@ -133,6 +133,21 @@ const user = db
 	.all();
 ```
 
+### parameter-prefix
+
+Enforce that all queries use the same prefix for named parameters.
+Can be configured to one of `:` (default), `@`, or `$`.
+
+```ts
+// Bad
+/* eslint "sqlite/parameter-prefix": ["error", ":"] */
+db.prepare("SELECT * FROM users WHERE id = @id");
+
+// Good
+/* eslint "sqlite/parameter-prefix": ["error", ":"] */
+db.prepare("SELECT * FROM users WHERE id = :id");
+```
+
 ## License
 
 eslint-plugin-sqlite is licensed under the [MIT License](LICENSE) and
