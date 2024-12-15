@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.5.0...v1.6.0) (2024-12-15)
+
+
+### Features
+
+* add `parameter-prefix` rule ([add31fc](https://github.com/merceyz/eslint-plugin-sqlite/commit/add31fc3a7bd5f86dbda6a008995b10e06212d64))
+
 ## [1.5.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.4.0...v1.5.0) (2024-12-14)
 
 
