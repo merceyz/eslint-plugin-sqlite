@@ -1,4 +1,4 @@
-ARG VERSION=1.82.0
+ARG VERSION=1.83.0
 
 FROM rust:${VERSION} AS build
 
