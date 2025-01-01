@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { TSESLint } from "@typescript-eslint/utils";
 import SQLite from "better-sqlite3";
 
-import { GetDatabaseOptions, RuleOptions } from "./ruleOptions.js";
+import type { GetDatabaseOptions, RuleOptions } from "./ruleOptions.js";
 import { parameterPrefixRule } from "./rules/parameter-prefix.js";
 import { typedInputRule } from "./rules/typed-input.js";
 import { createTypedResultRule } from "./rules/typed-result.js";

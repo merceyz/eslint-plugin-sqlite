@@ -1,5 +1,5 @@
-import { RuleTester, RunTests } from "@typescript-eslint/rule-tester";
-import { RuleModule } from "@typescript-eslint/utils/ts-eslint";
+import { RuleTester, type RunTests } from "@typescript-eslint/rule-tester";
+import type { RuleModule } from "@typescript-eslint/utils/ts-eslint";
 import * as vitest from "vitest";
 
 RuleTester.afterAll = vitest.afterAll;

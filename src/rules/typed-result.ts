@@ -1,11 +1,11 @@
 import { ASTUtils, ESLintUtils, TSESTree } from "@typescript-eslint/utils";
 
 import {
-	ColumnInfo,
+	type ColumnInfo,
 	ColumnType,
 	inferQueryResult,
 } from "../inferQueryResult.js";
-import { RuleOptions } from "../ruleOptions.js";
+import type { RuleOptions } from "../ruleOptions.js";
 import { getQueryValue, stringifyNode } from "../utils.js";
 
 type ColumnInfoWithUserType = ColumnInfo & { userTSTypeAnnotation?: string };
