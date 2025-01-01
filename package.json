@@ -34,7 +34,7 @@
 	],
 	"dependencies": {
 		"@types/better-sqlite3": "^7.6.11",
-		"@typescript-eslint/utils": "^8.1.0",
+		"@typescript-eslint/utils": "^8.19.0",
 		"better-sqlite3": "^11.1.2"
 	},
 	"peerDependencies": {
@@ -43,19 +43,18 @@
 		"eslint": "^8.57.0 || ^9.0.0"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.9.0",
+		"@eslint/js": "^9.17.0",
 		"@tsconfig/node18": "^18.2.4",
 		"@tsconfig/strictest": "^2.0.5",
 		"@types/eslint-config-prettier": "^6.11.3",
-		"@types/eslint__js": "^8.42.3",
 		"@types/node": "^18.19.44",
-		"@typescript-eslint/rule-tester": "^8.1.0",
-		"eslint": "^9.9.0",
+		"@typescript-eslint/rule-tester": "^8.19.0",
+		"eslint": "^9.17.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-simple-import-sort": "^12.1.1",
-		"prettier": "^3.3.3",
+		"prettier": "^3.4.2",
 		"typescript": "^5.5.4",
-		"typescript-eslint": "^8.1.0",
+		"typescript-eslint": "^8.19.0",
 		"vitest": "^2.0.5",
 		"wasm-pack": "^0.13.0"
 	},

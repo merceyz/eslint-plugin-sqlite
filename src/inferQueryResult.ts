@@ -178,7 +178,7 @@ export function inferQueryResult(
 						p1: bigint;
 						p2: bigint;
 						p3: bigint;
-						p4: unknown;
+						p4: string | number | bigint | null;
 					}
 				>(`EXPLAIN ${query}`)
 				.safeIntegers()
