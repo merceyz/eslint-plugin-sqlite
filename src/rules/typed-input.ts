@@ -1,20 +1,15 @@
 import { ASTUtils, ESLintUtils, TSESTree } from "@typescript-eslint/utils";
 
 import { inferQueryInput, type QueryInput } from "../inferQueryInput.js";
-import { getQueryValue } from "../utils.js";
+import { getQueryValue, makeRuleListener } from "../utils.js";
 
 export const typedInputRule = ESLintUtils.RuleCreator.withoutDocs({
 	create(context) {
-		return {
-			'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
-				node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
-					arguments: [TSESTree.CallExpression["arguments"][0]];
-					callee: TSESTree.MemberExpression;
-				},
-			) {
+		return makeRuleListener({
+			handleQuery({ typeArguments, rootNode, queryNode, callee }) {
 				const val = getQueryValue(
-					node.arguments[0],
-					context.sourceCode.getScope(node.arguments[0]),
+					queryNode,
+					context.sourceCode.getScope(queryNode),
 				);
 				if (typeof val?.value !== "string") {
 					return;
@@ -25,11 +20,10 @@ export const typedInputRule = ESLintUtils.RuleCreator.withoutDocs({
 					return;
 				}
 
-				const typeArguments = node.typeArguments;
 				const inputParam = typeArguments?.params[0];
 				if (!typeArguments || !inputParam) {
 					context.report({
-						node: node,
+						node: rootNode,
 						messageId: "missingInputType",
 						*fix(fixer) {
 							if (typeArguments && !inputParam) {
@@ -39,7 +33,7 @@ export const typedInputRule = ESLintUtils.RuleCreator.withoutDocs({
 								);
 							} else {
 								yield fixer.insertTextAfter(
-									node.callee,
+									callee,
 									`<${queryInputToText(queryInput)}>`,
 								);
 							}
@@ -99,7 +93,7 @@ export const typedInputRule = ESLintUtils.RuleCreator.withoutDocs({
 					},
 				});
 			},
-		};
+		});
 	},
 	meta: {
 		messages: {

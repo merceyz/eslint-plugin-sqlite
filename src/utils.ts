@@ -1,4 +1,5 @@
 import { ASTUtils, TSESLint, TSESTree } from "@typescript-eslint/utils";
+import type { RuleListener } from "@typescript-eslint/utils/ts-eslint";
 
 export function stringifyNode(
 	node: TSESTree.Expression | TSESTree.PrivateIdentifier,
@@ -139,4 +140,29 @@ function getParameterExpressionValue(expr: TSESTree.Expression) {
 	}
 
 	return mapValue.value;
+}
+
+type HandleQueryFN = (data: {
+	queryNode: TSESTree.CallExpression["arguments"][0];
+	callee: TSESTree.MemberExpression;
+	typeArguments: TSESTree.TSTypeParameterInstantiation | undefined;
+	rootNode: TSESTree.Node;
+}) => void;
+
+export function makeRuleListener(opts: { handleQuery: HandleQueryFN }) {
+	return {
+		'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
+			node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
+				arguments: [TSESTree.CallExpression["arguments"][0]];
+				callee: TSESTree.MemberExpression;
+			},
+		) {
+			opts.handleQuery({
+				queryNode: node.arguments[0],
+				callee: node.callee,
+				typeArguments: node.typeArguments,
+				rootNode: node,
+			});
+		},
+	} satisfies RuleListener;
 }

@@ -1,26 +1,22 @@
-import { ESLintUtils, TSESTree } from "@typescript-eslint/utils";
+import { ESLintUtils } from "@typescript-eslint/utils";
 
 import type { RuleOptions } from "../ruleOptions.js";
-import { getQueryValue, stringifyNode } from "../utils.js";
+import { getQueryValue, makeRuleListener, stringifyNode } from "../utils.js";
 
 export function createValidQueryRule(options: RuleOptions) {
 	return ESLintUtils.RuleCreator.withoutDocs({
 		create(context) {
-			return {
-				'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
-					node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
-						arguments: [TSESTree.CallExpression["arguments"][0]];
-						callee: TSESTree.MemberExpression;
-					},
-				) {
-					const arg = node.arguments[0];
-
-					const val = getQueryValue(arg, context.sourceCode.getScope(arg));
+			return makeRuleListener({
+				handleQuery({ queryNode, callee }) {
+					const val = getQueryValue(
+						queryNode,
+						context.sourceCode.getScope(queryNode),
+					);
 
 					if (!val) {
 						context.report({
 							messageId: "nonStaticQuery",
-							node: arg,
+							node: queryNode,
 						});
 						return;
 					}
@@ -28,7 +24,7 @@ export function createValidQueryRule(options: RuleOptions) {
 					if (typeof val.value !== "string") {
 						context.report({
 							messageId: "invalidQuery",
-							node: arg,
+							node: queryNode,
 							data: {
 								message: `typeof ${typeof val.value} is not a valid query`,
 							},
@@ -36,7 +32,7 @@ export function createValidQueryRule(options: RuleOptions) {
 						return;
 					}
 
-					const databaseName = stringifyNode(node.callee.object);
+					const databaseName = stringifyNode(callee.object);
 					if (!databaseName) {
 						return;
 					}
@@ -51,7 +47,7 @@ export function createValidQueryRule(options: RuleOptions) {
 					} catch (error) {
 						context.report({
 							messageId: "invalidQuery",
-							node: arg,
+							node: queryNode,
 							data: {
 								message:
 									error && typeof error === "object" && "message" in error
@@ -61,7 +57,7 @@ export function createValidQueryRule(options: RuleOptions) {
 						});
 					}
 				},
-			};
+			});
 		},
 		meta: {
 			messages: {

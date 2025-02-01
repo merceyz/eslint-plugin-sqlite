@@ -1,22 +1,18 @@
-import { ESLintUtils, TSESTree } from "@typescript-eslint/utils";
+import { ESLintUtils } from "@typescript-eslint/utils";
 
 import { does_all_named_parameters_start_with_prefix } from "../parser/parser.js";
-import { getQueryValue } from "../utils.js";
+import { getQueryValue, makeRuleListener } from "../utils.js";
 
 export const parameterPrefixRule = ESLintUtils.RuleCreator.withoutDocs({
 	create(context, options) {
 		const expectedPrefix = options[0];
 
-		return {
-			'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
-				node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
-					arguments: [TSESTree.CallExpression["arguments"][0]];
-					callee: TSESTree.MemberExpression;
-				},
-			) {
-				const arg = node.arguments[0];
-
-				const val = getQueryValue(arg, context.sourceCode.getScope(arg));
+		return makeRuleListener({
+			handleQuery({ queryNode }) {
+				const val = getQueryValue(
+					queryNode,
+					context.sourceCode.getScope(queryNode),
+				);
 
 				if (typeof val?.value !== "string") {
 					return;
@@ -29,7 +25,7 @@ export const parameterPrefixRule = ESLintUtils.RuleCreator.withoutDocs({
 
 				if (result === false) {
 					context.report({
-						node: arg,
+						node: queryNode,
 						messageId: "incorrectPrefixUsed",
 						data: {
 							prefix: expectedPrefix,
@@ -37,7 +33,7 @@ export const parameterPrefixRule = ESLintUtils.RuleCreator.withoutDocs({
 					});
 				}
 			},
-		};
+		});
 	},
 	meta: {
 		messages: {

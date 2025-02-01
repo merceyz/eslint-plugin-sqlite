@@ -6,29 +6,24 @@ import {
 	inferQueryResult,
 } from "../inferQueryResult.js";
 import type { RuleOptions } from "../ruleOptions.js";
-import { getQueryValue, stringifyNode } from "../utils.js";
+import { getQueryValue, makeRuleListener, stringifyNode } from "../utils.js";
 
 type ColumnInfoWithUserType = ColumnInfo & { userTSTypeAnnotation?: string };
 
 export function createTypedResultRule(options: RuleOptions) {
 	return ESLintUtils.RuleCreator.withoutDocs({
 		create(context) {
-			return {
-				'CallExpression[callee.type=MemberExpression][callee.property.name="prepare"][arguments.length=1]'(
-					node: Omit<TSESTree.CallExpression, "arguments" | "callee"> & {
-						arguments: [TSESTree.CallExpression["arguments"][0]];
-						callee: TSESTree.MemberExpression;
-					},
-				) {
+			return makeRuleListener({
+				handleQuery({ queryNode, callee, typeArguments, rootNode }) {
 					const val = getQueryValue(
-						node.arguments[0],
-						context.sourceCode.getScope(node.arguments[0]),
+						queryNode,
+						context.sourceCode.getScope(queryNode),
 					);
 					if (typeof val?.value !== "string") {
 						return;
 					}
 
-					const databaseName = stringifyNode(node.callee.object);
+					const databaseName = stringifyNode(callee.object);
 					if (!databaseName) {
 						return;
 					}
@@ -46,7 +41,6 @@ export function createTypedResultRule(options: RuleOptions) {
 						return;
 					}
 
-					const typeArguments = node.typeArguments;
 					if (columns.length === 0) {
 						const inputNode = typeArguments?.params[0];
 						const resultNode = typeArguments?.params[1];
@@ -69,10 +63,10 @@ export function createTypedResultRule(options: RuleOptions) {
 					if (!typeArguments) {
 						context.report({
 							messageId: "missingResultType",
-							node,
+							node: rootNode,
 							*fix(fixer) {
 								yield fixer.insertTextAfter(
-									node.callee,
+									callee,
 									`<[], ${columnsToObjectLiteralText(columns)}>`,
 								);
 							},
@@ -172,7 +166,7 @@ export function createTypedResultRule(options: RuleOptions) {
 						return;
 					}
 				},
-			};
+			});
 		},
 		meta: {
 			messages: {
