@@ -27,6 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.release-please.outputs.release_created  }}
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +43,4 @@ jobs:
 
       - run: yarn
 
-      - run: yarn npm publish --access public
-        env:
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: yarn npm publish --access public --provenance
