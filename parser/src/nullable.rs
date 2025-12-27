@@ -20,42 +20,41 @@ pub fn is_column_nullable(
 	let mut parser = Parser::new(query.as_bytes());
 	let cmd = parser.next().ok()??;
 
-	if let ast::Cmd::Stmt(ast::Stmt::Select(select)) = cmd {
-		if let ast::OneSelect::Select {
+	if let ast::Cmd::Stmt(ast::Stmt::Select(select)) = cmd
+		&& let ast::OneSelect::Select {
 			from: Some(from),
 			where_clause,
 			..
 		} = select.body.select
-		{
-			// If a column is declared as not null we only need to prove that the table it came from is always present
-			if notnull {
-				return get_used_table_name(table_name, &from).map(|_| NullableResult::NotNull);
-			}
+	{
+		// If a column is declared as not null we only need to prove that the table it came from is always present
+		if notnull {
+			return get_used_table_name(table_name, &from).map(|_| NullableResult::NotNull);
+		}
 
-			let used_table_name = get_used_table_name(table_name, &from)?;
+		let used_table_name = get_used_table_name(table_name, &from)?;
 
-			if let Some(where_clause) = where_clause {
-				let result = test_expr(column, used_table_name, &where_clause);
-				if result.is_some() {
-					return result;
-				}
+		if let Some(where_clause) = where_clause {
+			let result = test_expr(column, used_table_name, &where_clause);
+			if result.is_some() {
+				return result;
 			}
+		}
 
-			if let Some(joins) = &from.joins {
-				// https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_
-				return joins.iter().find_map(|join| match join {
-					ast::JoinedSelectTable {
-						operator:
-							ast::JoinOperator::Comma
-							| ast::JoinOperator::TypedJoin(None)
-							| ast::JoinOperator::TypedJoin(Some(ast::JoinType::INNER))
-							| ast::JoinOperator::TypedJoin(Some(ast::JoinType::CROSS)),
-						constraint: Some(ast::JoinConstraint::On(expr)),
-						..
-					} => test_expr(column, used_table_name, expr),
-					_ => None,
-				});
-			}
+		if let Some(joins) = &from.joins {
+			// https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_
+			return joins.iter().find_map(|join| match join {
+				ast::JoinedSelectTable {
+					operator:
+						ast::JoinOperator::Comma
+						| ast::JoinOperator::TypedJoin(None)
+						| ast::JoinOperator::TypedJoin(Some(ast::JoinType::INNER))
+						| ast::JoinOperator::TypedJoin(Some(ast::JoinType::CROSS)),
+					constraint: Some(ast::JoinConstraint::On(expr)),
+					..
+				} => test_expr(column, used_table_name, expr),
+				_ => None,
+			});
 		}
 	}
 
@@ -132,7 +131,7 @@ fn test_expr(column_name: &str, table_name: &str, expr: &ast::Expr) -> Option<Nu
 			if expr_matches_name(column_name, table_name, lhs)
 				|| expr_matches_name(column_name, table_name, rhs) =>
 		{
-			return Some(NullableResult::NotNull)
+			return Some(NullableResult::NotNull);
 		}
 		// column is null
 		ast::Expr::Binary(left, ast::Operator::Is, right)
