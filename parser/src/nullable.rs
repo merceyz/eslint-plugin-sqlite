@@ -68,20 +68,15 @@ pub fn is_column_nullable(
 fn is_table_name_in_left_or_right_join(table_name: &str, from: &ast::FromClause) -> bool {
 	if let Some(joins) = &from.joins {
 		for join in joins {
-			match join {
-				ast::JoinedSelectTable {
-					operator: ast::JoinOperator::TypedJoin(Some(join_type)),
-					table: ast::SelectTable::Table(name, _, _),
-					..
-				} => {
-					if (*join_type == (ast::JoinType::LEFT | ast::JoinType::OUTER)
-						|| *join_type == (ast::JoinType::RIGHT | ast::JoinType::OUTER))
-						&& compare_identifier(&name.name.0, table_name)
-					{
-						return true;
-					}
-				}
-				_ => {}
+			if let ast::JoinedSelectTable {
+				operator: ast::JoinOperator::TypedJoin(Some(join_type)),
+				table: ast::SelectTable::Table(name, _, _),
+				..
+			} = join && (*join_type == (ast::JoinType::LEFT | ast::JoinType::OUTER)
+				|| *join_type == (ast::JoinType::RIGHT | ast::JoinType::OUTER))
+				&& compare_identifier(&name.name.0, table_name)
+			{
+				return true;
 			}
 		}
 	}
