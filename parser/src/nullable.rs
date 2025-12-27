@@ -20,8 +20,8 @@ pub fn is_column_nullable(
 	let mut parser = Parser::new(query.as_bytes());
 	let cmd = parser.next().ok()??;
 
-	if let ast::Cmd::Stmt(ast::Stmt::Select(select)) = cmd {
-		if let ast::OneSelect::Select {
+	if let ast::Cmd::Stmt(ast::Stmt::Select(select)) = cmd
+		&& let ast::OneSelect::Select {
 			from: Some(from),
 			where_clause,
 			..
@@ -57,7 +57,6 @@ pub fn is_column_nullable(
 				});
 			}
 		}
-	}
 
 	None
 }
