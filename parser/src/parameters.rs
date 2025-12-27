@@ -1,7 +1,7 @@
 use fallible_iterator::FallibleIterator;
 use indexmap::IndexSet;
 use sqlite3_parser::{
-	ast::{fmt::ToTokens, ParameterInfo},
+	ast::{ParameterInfo, fmt::ToTokens},
 	lexer::sql::Parser,
 };
 use wasm_bindgen::prelude::*;

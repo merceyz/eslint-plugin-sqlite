@@ -132,7 +132,7 @@ fn test_expr(column_name: &str, table_name: &str, expr: &ast::Expr) -> Option<Nu
 			if expr_matches_name(column_name, table_name, lhs)
 				|| expr_matches_name(column_name, table_name, rhs) =>
 		{
-			return Some(NullableResult::NotNull)
+			return Some(NullableResult::NotNull);
 		}
 		// column is null
 		ast::Expr::Binary(left, ast::Operator::Is, right)
