@@ -46,7 +46,7 @@ jobs:
           tool: cargo-about@0.6.4
 
       - run: |
-          yarn generate:licenses:ci
+          yarn generate:licenses
 
           if git diff --exit-code; then
             echo "No changes in licenses"

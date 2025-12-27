@@ -38,7 +38,7 @@ jobs:
 
       - run: cd parser && cargo test
 
-      - run: yarn build:ci
+      - run: yarn build
 
       - run: yarn lint --no-fix
 
