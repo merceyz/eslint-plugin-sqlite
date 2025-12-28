@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.6.0...v1.6.1) (2025-12-28)
+
+
+### Bug Fixes
+
+* check if column can be from a left or right joined table ([#11](https://github.com/merceyz/eslint-plugin-sqlite/issues/11)) ([5509261](https://github.com/merceyz/eslint-plugin-sqlite/commit/5509261f893550250e3d1665cf78078800b401ec))
+
 ## [1.6.0](https://github.com/merceyz/eslint-plugin-sqlite/compare/v1.5.0...v1.6.0) (2024-12-15)
 
 
