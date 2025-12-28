@@ -43,7 +43,7 @@ jobs:
 
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-about@0.6.4
+          tool: cargo-about@0.8.4
 
       - run: |
           yarn generate:licenses
